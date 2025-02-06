@@ -23,7 +23,10 @@
 
 ;;; Commentary:
 
-;; More info here
+;; SEE https://www.markdownguide.org/cheat-sheet/
+;; TODO impleting highlight, heading ID,  DEfiniton list, emoji, subscript, superscript
+
+;; BUG escape delimiter failed in code inline
 
 ;;; Code:
 
@@ -107,38 +110,28 @@
   "Face for tables."
   :group 'markdown-ts-faces)
 
-;; (defface markdown-markup
-;;   '((t (:inherit shadow :slant normal :weight normal)))
-;;   "Face for markup elements."
-;;   :group 'markdown-ts-faces)
-;;
-;; (defface markdown-header-rule
-;;   '((t (:inherit markdown-markup)))
-;;   "Base face for headers rules."
-;;   :group 'markdown-ts-faces)
-;;
-;; (defface markdown-header-delimiter
-;;   '((t (:inherit markdown-markup)))
-;;   "Base face for headers hash delimiter."
-;;   :group 'markdown-ts-faces)
-
-(defface markdown-order-list
+(defface markdown-ordered-list
   '((t (:inherit font-lock-string-face)))
   "Face for order list item markers."
   :group 'markdown-ts-faces)
 
-(defface markdown-unorder-list
+(defface markdown-unordered-list
   '((t (:inherit font-lock-number-face)))
   "Face for unorder list item markers."
   :group 'markdown-ts-faces)
 
 (defface markdown-task-list
-  '((t (:inherit markdown-unorder-list)))
+  '((t (:inherit markdown-unordered-list)))
   "Face for unorder list item markers."
   :group 'markdown-ts-faces)
 
 (defface markdown-blockquote
   '((t (:inherit (italic bold))))
+  "Face for blockquote sections."
+  :group 'markdown-ts-faces)
+
+(defface markdown-code-inline
+  '((t (:inherit (markdown-region font-lock-string-face))))
   "Face for blockquote sections."
   :group 'markdown-ts-faces)
 
@@ -157,35 +150,13 @@
   "Face for tables."
   :group 'markdown-ts-faces)
 
-;; (defface markdown-code
-;;   '((t (:inherit secondary-selection)))
-;;   "Face for inline code, pre blocks, and fenced code blocks.
-;; This may be used, for example, to add a contrasting background to
-;; inline code fragments and code blocks."
-;;   :group 'markdown-ts-faces)
-;;
-;; (defface markdown-inline-code
-;;   '((t (:inherit (markdown-code-face font-lock-constant-face))))
-;;   "Face for inline code."
-;;   :group 'markdown-ts-faces)
-;;
-;; (defface markdown-pre
-;;   '((t (:inherit (markdown-code-face font-lock-constant-face))))
-;;   "Face for preformatted text."
-;;   :group 'markdown-ts-faces)
-;;
-;; (defface markdown-language-keyword
-;;   '((t (:inherit font-lock-type-face)))
-;;   "Face for programming language identifiers."
-;;   :group 'markdown-ts-faces)
-;;
 (defface markdown-language-info
   '((t (:inherit font-lock-keyword-face)))
   "Face for programming language info strings."
   :group 'markdown-ts-faces)
 
-(defface markdown-link-title
-  '((t (:inherit font-lock-keyword-face)))
+(defface markdown-link-text
+  '((t (:inherit font-lock-number-face)))
   "Face for links."
   :group 'markdown-ts-faces)
 
@@ -194,54 +165,40 @@
   "Face for links."
   :group 'markdown-ts-faces)
 
+(defface markdown-link-bracket
+  '((t (:inherit font-lock-doc-face)))
+  "Face for HTML comments."
+  :group 'markdown-ts-faces)
+
 (defface markdown-reference
-  '((t (:inherit font-lock-number-face)))
+  '((t (:inherit font-lock-keyword-face)))
   "Face for link references."
   :group 'markdown-ts-faces)
 
-;; (defface markdown-missing-link
-;;   '((t (:inherit font-lock-warning-face)))
-;;   "Face for missing links."
-;;   :group 'markdown-ts-faces)
+(defface markdown-footnote
+  '((t (:inherit markdown-reference)))
+  "Face for link references."
+  :group 'markdown-ts-faces)
 
-;; (defface markdown-footnote-marker
-;;   '((t (:inherit markdown-markup-face)))
-;;   "Face for footnote markers."
-;;   :group 'markdown-ts-faces)
-;;
-;; (defface markdown-footnote-text
-;;   '((t (:inherit font-lock-comment-face)))
-;;   "Face for footnote text."
-;;   :group 'markdown-ts-faces)
+(defface markdown-comment
+  '((t (:inherit (font-lock-comment-face italic))))
+  "Face for HTML comments."
+  :group 'markdown-ts-faces)
 
-;; (defface markdown-url
-;;   '((t (:inherit font-lock-string-face)))
-;;   "Face for URLs that are part of markup.
-;; For example, this applies to URLs in inline links:
-;; [link text](http://example.com/)."
-;;   :group 'markdown-ts-faces)
-;;
-;; (defface markdown-plain-url
-;;   '((t (:inherit markdown-link-face)))
-;;   "Face for URLs that are also links.
-;; For example, this applies to plain angle bracket URLs:
-;; <http://example.com/>."
-;;   :group 'markdown-ts-faces)
-;;
-;; (defface markdown-link-title
-;;   '((t (:inherit font-lock-comment-face)))
-;;   "Face for reference link titles."
-;;   :group 'markdown-ts-faces)
-;;
+(defface markdown-horizontal-rule
+  '((t (:inherit warning)))
+  "Face for HTML comments."
+  :group 'markdown-ts-faces)
+
+(defface markdown-escape
+  '((t (:inherit font-lock-escape-face)))
+  "Face for HTML comments."
+  :group 'markdown-ts-faces)
+
 ;; (defface markdown-line-break
 ;;   '((t (:inherit font-lock-constant-face :underline t)))
 ;;   "Face for hard line breaks."
 ;;   :group 'markdown-ts-faces)
-
-(defface markdown-comment
-  '((t (:inherit font-lock-comment-face)))
-  "Face for HTML comments."
-  :group 'markdown-ts-faces)
 
 ;; (defface markdown-math
 ;;   '((t (:inherit font-lock-string-face)))
@@ -261,16 +218,6 @@
 ;; (defface markdown-gfm-checkbox
 ;;   '((t (:inherit font-lock-builtin-face)))
 ;;   "Face for GFM checkboxes."
-;;   :group 'markdown-ts-faces)
-;;
-;; (defface markdown-highlight
-;;   '((t (:inherit highlight)))
-;;   "Face for mouse highlighting."
-;;   :group 'markdown-ts-faces)
-;;
-;; (defface markdown-hr
-;;   '((t (:inherit markdown-markup-face)))
-;;   "Face for horizontal rules."
 ;;   :group 'markdown-ts-faces)
 ;;
 ;; (defface markdown-html-tag-name
@@ -296,21 +243,11 @@
 ;; (defface markdown-html-entity
 ;;   '((t (:inherit font-lock-variable-name-face)))
 ;;   "Face for HTML entities."
-;;   :group 'markdown-ts-faces)
-;;
-;; (defface markdown-highlighting
-;;   '((t (:background "yellow" :foreground "black")))
-;;   "Face for highlighting."
-;;   :group 'markdown-ts-faces)
+;;   :group 'markdown-ts-faces);;
+
 
 
 ;;; markdown-ts-mode config
-
-;; (defface markdown-header-1
-;;
-;;   SPEC
-;;   "DOC")
-
 
 (defvar markdown--treesit-syntax-table
   (let ((table (make-syntax-table)))
@@ -322,22 +259,7 @@
 
    :language 'markdown
    :feature 'horizontal_rule
-   '((thematic_break) @markdown-comment)
-
-   :language 'markdown
-   :feature 'blockquote
-   '(
-     ;; TODO more precise font lock
-     ;; (block_quote_marker) @markdown-blockquote-marker
-     ;; (block_quote (paragraph (inline (block_continuation) @markdown-blockquote-marker)))
-     (block_quote) @markdown-blockquote)
-
-   :language 'markdown
-   :feature 'table
-   '((pipe_table
-      (pipe_table_header (pipe_table_cell) @markdown-table_header)
-      (pipe_table_row (pipe_table_cell) @markdown-table_content)))
-
+   '((thematic_break) @markdown-horizontal-rule)
 
    :language 'markdown
    :feature 'heading
@@ -352,29 +274,51 @@
      (setext_heading (paragraph) @markdown-header-1))
 
    :language 'markdown
-   :feature 'list
+   :feature 'blockquote
+   '(
+     (block_quote)  @markdown-blockquote
+     ;; TODO more precise font lock
+     ;; (block_quote (block_quote_marker) @markdown-blockquote)
+     ;; (block_quote (paragraph (inline (block_continuation) @markdown-blockquote)))
+     )
+
+   :language 'markdown
+   :feature 'table
+   '((pipe_table
+      (pipe_table_header (pipe_table_cell) @markdown-table-header)
+      (pipe_table_row (pipe_table_cell) @markdown-table-content)))
+
+   :language 'markdown
+   :feature 'ordered_list
+   '([(list_marker_dot)
+      (list_marker_parenthesis)]
+     @markdown-ordered-list)
+
+   :language 'markdown
+   :feature 'unordered_list
    '([(list_marker_plus)
       (list_marker_minus)
       (list_marker_star)]
-     @markdown-unorder-list
-     [(list_marker_dot)
-      (list_marker_parenthesis)]
-     @markdown-order-list
-     [(task_list_marker_checked)
+     @markdown-unordered-list)
+
+   :language 'markdown
+   :feature 'task_list
+   '([(task_list_marker_checked)
       (task_list_marker_unchecked)]
      @markdown-task-list)
 
    :language 'markdown
-   :feature 'link_ref
+   :feature 'reference
    '((link_reference_definition
       (link_label) @markdown-reference
       (link_destination) @markdown-link-url
-      (link_title) @markdown-comment))
+      (link_title) @markdown-link-bracket))
 
    :language 'markdown
    :feature 'code_block
    :override 'append
-   '((fenced_code_block) @markdown-region
+   '(
+     ;; (fenced_code_block) @markdown-region
      (fenced_code_block_delimiter) @markdown-delimiter
      (info_string) @markdown-language-info
      ;; TODO use injection
@@ -383,41 +327,68 @@
      )
 
    :language 'markdown-inline
-   :feature 'emphasis
+   :feature 'escape
+   '((backslash_escape) @markdown-escape)
+
+   :language 'markdown-inline
+   :feature 'comment
+   '(((html_tag) @text (:match "^<!--.*-->$" @text))
+     @markdown-comment)
+
+   :language 'markdown-inline
+   :feature 'footnote
+   '((shortcut_link
+      (link_text) @text
+      (:match "^\\^" @text))
+     @markdown-footnote)
+
+   :language 'markdown-inline
+   :feature 'bold
    :override 'append
-   '((emphasis) @markdown-italic
-     (strong_emphasis) @markdown-bold
-     (strikethrough) @markdown-strikethrough)
+   '((strong_emphasis) @markdown-bold)
+
+   :language 'markdown-inline
+   :feature 'italic
+   :override 'append
+   '((emphasis) @markdown-italic)
+
+   :language 'markdown-inline
+   :feature 'strikethrough
+   :override 'append
+   '((strikethrough) @markdown-strikethrough)
 
    :language 'markdown-inline
    :feature 'code_inline
    :override t
-   '((code_span) @markdown-code)
+   '((code_span
+      (_) @delimiter
+      (:equal "`" @delimiter))
+     @markdown-code-inline)
 
    :language 'markdown-inline
    :feature 'delimiter
-   :override 'append
+   :override t
    '((emphasis_delimiter) @markdown-delimiter
      (code_span_delimiter) @markdown-delimiter)
 
    :language 'markdown-inline
    :feature 'link
-   '(
+   '((inline_link
+      (link_text) @markdown-link-text
+      (link_destination) @markdown-link-url)
+     (inline_link ["[" "]" "(" ")"] @markdown-link-bracket)
 
-     ;; (link_text) @font-lock-number-face
-     ;; inline-link
-     (inline_link (link_text) @markdown-link-title)
-     (inline_link (link_destination) @markdown-link-url)
-     ;; (inline_link ["[" "]" "(" ")"] @markdown-comment)
+     (full_reference_link
+      (link_text) @markdown-link-text
+      (link_label) @markdown-reference)
+     (full_reference_link ["[" "]"] @markdown-link-bracket))
 
-     (full_reference_link (link_text) @markdown-link-title)
-     (full_reference_link (link_label) @markdown-reference)
-
-     ;; image
-     (image (image_description) @markdown-link-title)
-     (image (link_destination) @markdown-link)
+   :language 'markdown-inline
+   :feature 'image
+   '((image (image_description) @markdown-link-text)
+     (image (link_destination) @markdown-link-url)
      (image (link_label) @markdown-reference)
-     (image ["[" "]" "(" ")" "!"] @markdown-comment))
+     (image ["[" "]" "(" ")" "!"] @markdown-link-bracket))
 
    ;; :language 'markdown-inline
    ;; :feature 'html_tag
@@ -439,7 +410,6 @@
     (error "Tree-sitter for markdown isn't available"))
 
   (setq-local treesit-primary-parser (treesit-parser-create 'markdown))
-  ;; (treesit-parser-create 'markdown)
   (treesit-parser-create 'markdown-inline)
 
   ;; Comments
@@ -450,13 +420,17 @@
   ;; Font-lock.
   (setq-local treesit-font-lock-settings markdown--treesit-font-lock-settings)
   (setq-local treesit-font-lock-feature-list
-              '((horizontal_rule delimiter)
-                (heading list link
-                         link_ref
-                         blockquote emphasis
-                         code_inline code_block
-                         ;; html_tag
-                         table)))
+              '((comment delimiter escape
+                         ;; meta
+                         )
+                ;; basic syntax
+                (heading ordered_list unordered_list bold italic blockquote
+                         code_inline horizontal_rule link image reference)
+                ;; extended syntax
+                (table strikethrough footnote code_block task_list)
+
+                ;; (wiki gfm)
+                ))
 
   (treesit-major-mode-setup))
 
