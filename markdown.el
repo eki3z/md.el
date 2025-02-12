@@ -146,7 +146,12 @@
   :group 'markdown-ts-faces)
 
 (defface markdown-table-content
-  '((t (:inherit font-lock-number-face)))
+  '((t (:inherit default)))
+  "Face for tables."
+  :group 'markdown-ts-faces)
+
+(defface markdown-table-delimiter
+  '((t (:inherit font-lock-doc-face)))
   "Face for tables."
   :group 'markdown-ts-faces)
 
@@ -165,8 +170,13 @@
   "Face for links."
   :group 'markdown-ts-faces)
 
-(defface markdown-link-bracket
+(defface markdown-link-title
   '((t (:inherit font-lock-doc-face)))
+  "Face for links."
+  :group 'markdown-ts-faces)
+
+(defface markdown-link-bracket
+  '((t (:inherit markdown-link-title)))
   "Face for HTML comments."
   :group 'markdown-ts-faces)
 
@@ -284,9 +294,10 @@
 
    :language 'markdown
    :feature 'table
-   '((pipe_table
-      (pipe_table_header (pipe_table_cell) @markdown-table-header)
-      (pipe_table_row (pipe_table_cell) @markdown-table-content)))
+   '((pipe_table_header (pipe_table_cell) @markdown-table-header)
+     (pipe_table_row (pipe_table_cell) @markdown-table-content)
+     (pipe_table (_ "|" @markdown-table-delimiter))
+     (pipe_table_delimiter_cell "-" @markdown-table-delimiter))
 
    :language 'markdown
    :feature 'ordered_list
@@ -311,8 +322,9 @@
    :feature 'reference
    '((link_reference_definition
       (link_label) @markdown-reference
-      (link_destination) @markdown-link-url
-      (link_title) @markdown-link-bracket))
+      (link_destination) @markdown-link-url)
+     (link_reference_definition
+      (link_title) @markdown-link-title))
 
    :language 'markdown
    :feature 'code_block
@@ -376,6 +388,7 @@
    '((inline_link
       (link_text) @markdown-link-text
       (link_destination) @markdown-link-url)
+     (inline_link (link_title) @markdown-link-title)
      (inline_link ["[" "]" "(" ")"] @markdown-link-bracket)
 
      (full_reference_link
@@ -387,6 +400,7 @@
    :feature 'image
    '((image (image_description) @markdown-link-text)
      (image (link_destination) @markdown-link-url)
+     (image (link_title) @markdown-link-title)
      (image (link_label) @markdown-reference)
      (image ["[" "]" "(" ")" "!"] @markdown-link-bracket))
 
@@ -394,26 +408,70 @@
    ;; :feature 'html_tag
    ;; '((html_tag) @markdown-html-entity)
 
+   ;; :language 'yaml
+   ;; :feature 'metadata
+   ;; '((block_mapping
+   ;;    (block_mapping_pair
+   ;;     key: (_) @font-lock-property-face
+   ;;     value: (_) @font-lock-string-face)))
+
    )
   "")
+
+;; (defun markdown-ts-imenu-node-p (node)
+;;   "Check if NODE is a valid entry to imenu."
+;;   (equal (treesit-node-type (treesit-node-parent node))
+;;          "atx_heading"))
+;; 
+;; (defun markdown-ts-imenu-name-function (node)
+;;   "Return an imenu entry if NODE is a valid header."
+;;   (let ((name (treesit-node-text node)))
+;;     (if (markdown-ts-imenu-node-p node)
+;;         (thread-first (treesit-node-parent node)(treesit-node-text))
+;;       name)))
 
 (defvar markdown--treesit-indent-rules
   nil)
 
 ;;;###autoload
 (define-derived-mode markdown-ts-mode fundamental-mode "markdown-ts"
-  ""
+  "Major mode for editing markdown, powered by tree-sitter."
   :syntax-table markdown--treesit-syntax-table
 
   (unless (and (treesit-ready-p 'markdown)
                (treesit-ready-p 'markdown-inline))
-    (error "Tree-sitter for markdown isn't available"))
+    (error "Tree-sitter for markdown isn't available.
+You can install the parsers with M-x
+`markdown-ts-mode-install-parsers'"))
 
   (setq-local treesit-primary-parser (treesit-parser-create 'markdown))
   (treesit-parser-create 'markdown-inline)
+  ;; (treesit-parser-create 'html)
+  ;; (treesit-parser-create 'yaml)
+
+  ;; injected parser ranges
+  (setq-local treesit-range-settings
+              (treesit-range-rules
+               :embed 'html
+               :host 'markdown
+               ))
 
   ;; Comments
+  (setq-local comment-start "<!-- ")
+  (setq-local comment-end " -->")
 
+  ;; TODO
+  ;; (setq-local comment-start-skip (rx (seq (syntax comment-start)
+  ;;                                        (* (syntax whitespace)))))
+  ;;(setq-local comment-end-skip (rx (* (syntax whitespace))
+  ;;                                 (group (syntax comment-end))))
+
+  ;; TODO imenu
+  ;; (setq-local treesit-simple-imenu-settings
+  ;;             '(("Headings"
+  ;;                "\\`atx_heading\\'"
+  ;;                markdown-ts-imenu-node-p
+  ;;                markdown-ts-imenu-name-function)))
   ;; Indent
   (setq-local treesit-simple-indent-rules markdown--treesit-indent-rules)
 
@@ -421,7 +479,7 @@
   (setq-local treesit-font-lock-settings markdown--treesit-font-lock-settings)
   (setq-local treesit-font-lock-feature-list
               '((comment delimiter escape
-                         ;; meta
+                         ;; metadata
                          )
                 ;; basic syntax
                 (heading ordered_list unordered_list bold italic blockquote

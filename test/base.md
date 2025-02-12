@@ -53,19 +53,29 @@ X^2^
 ---
 
 ## Links
-[Clickable text](https://example.com)
+
+[Clickable text](https://example.com "csdcsdcs")
+
 [Relative link](./path/to/file.md)
+
 [reff][id]
 
 [id]: https://www.baidu.com "hahah"
 
+[id]: https://www.baidu.com
+
 ---
 
 ## Images
+![Alt text for image](https://via.placeholder.com/150 "cdscs")
+
 ![Alt text for image](https://via.placeholder.com/150)
+
 ![cc][cc_ref]
 
 [cc_ref]: dog.png "title"
+
+[cc_ref]: dog.png
 
 ---
 
