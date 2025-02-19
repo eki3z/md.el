@@ -46,7 +46,7 @@ H~2~O
 
 X^2^
 
-### My Great Heading {#custom-id}
+### My Great Heading
 
 ## Emphasis
 
@@ -60,9 +60,11 @@ X^2^
 ## Lists
 
 ### Unordered list:
+
 - Item 1
   - Sub-item 1
   - Sub-item 2
+
 - Item 2
 
 ### Ordered list:
@@ -75,6 +77,8 @@ X^2^
 
 ## Links
 
+[cc](cds@qq.com)
+
 [Clickable text](https://example.com "csdcsdcs")
 
 [Relative link](./path/to/file.md)
@@ -84,6 +88,14 @@ X^2^
 [id]: https://www.baidu.com "hahah"
 
 [id]: https://www.baidu.com
+
+[foo][]
+
+<localhost:5001/foo>
+
+<https://en.wikipedia.org/wiki>
+
+<foo@bar.example.com>
 
 ---
 
@@ -98,18 +110,19 @@ X^2^
 
 [cc_ref]: dog.png
 
-<https://en.wikipedia.org/wiki>
-
 [1]: <https://en.wikipedia.org/wiki/Hobbit#Lifestyle> (Hobbit lifestyles)
+
 ---
 
 ## Blockquotes
 
 > This is a blockquote.
 > cdcdcscscs
->  cdcd
->
->  csxcd
+>  > cdcd
+>  >      csdc
+>>csdc
+>  > `cc`
+
 kkkkk
 
 ---
@@ -122,6 +135,8 @@ Use `inline code` like this.
 
 ### Code block:
 
+#### fenced code block
+
 ```javascript
 // Code example in JavaScript
 console.log("Hello, world!");
@@ -131,6 +146,14 @@ console.log("Hello, world!");
 # cdcd
 print("hellow, world")
 ```
+
+#### indented code block
+
+    def hello():
+        print("Hello, World!")
+
+    hello()
+
 ---
 
 ## Tables
@@ -144,9 +167,10 @@ print("hellow, world")
 
 ## Horizontal Rules
 You can create a horizontal rule with:
-- `---`
-- `***`
-- `___`
+
+- `kk`
+<!-- FIXME -->
+- `js` cscs`
 
 ---
 
@@ -159,7 +183,8 @@ You can create a horizontal rule with:
 
 ## Escaping Characters
 Escape special characters using a backslash:
-\- This renders `-` as a regular character.
+
+\- This renders - as a regular character.
 
 ---
 
@@ -172,6 +197,41 @@ You can include HTML for advanced formatting:
 ## Footnotes
 Here is a sentence with a footnote.[^1]
 
+## footnote reference
+
 [^1]: This is the footnote.
+
+
+## wikilink
+
+Obsidian supports the following link formats:
+
+Wikilink: [[Three laws of motion]]
+Markdown: [Three laws of motion](Three%20laws%20of%20motion.md)
+
+## tags
+
+this  is a tag for ex #cc123, and another #d345
+
+
+## latex
+
+`$$This$$ has $$an odd$$ number of instances of $$.`
+
+
+foo\
+bar
+
+
+&nbsp;
+
+&amp;
+
+&copy; &AElig; &Dcaron;
+&frac34; &HilbertSpace; &DifferentialD;
+&ClockwiseContourIntegral; &ngE;
+
+&#35; &#1234; &#992; &#0;
+
 
 ---

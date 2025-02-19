@@ -100,12 +100,14 @@ You can create a horizontal rule with:
 ---
 
 ## Autolinks
-Links and URLs are automatically converted:  
+Links and URLs are automatically converted:
+
 https://github.com
 
 ---
 
 ## Strikethrough
+
 ~~This text is crossed out.~~
 
 ---
