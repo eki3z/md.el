@@ -1,3 +1,24 @@
+---
+title: "Example Post"
+date: 2023-10-15
+author: "John Doe"
+tags:
+  - markdown
+  - yaml
+  - example
+taggs: ["markdown", "toml", "example"]
+draft: false
+---
+
++++
+title = "Example Post"
+date = 2023-10-15
+author = "John Doe"
+tags = ["markdown", "toml", "example"]
+draft = false
++++
+
+
 # Markdown Grammar Guide
 
 ## Headers
@@ -77,6 +98,9 @@ X^2^
 
 [cc_ref]: dog.png
 
+<https://en.wikipedia.org/wiki>
+
+[1]: <https://en.wikipedia.org/wiki/Hobbit#Lifestyle> (Hobbit lifestyles)
 ---
 
 ## Blockquotes

@@ -1,4 +1,4 @@
-;;; markdown.el --- Summary -*- lexical-binding: t -*-
+;;; markdown.el --- Major mode for editing MARKDOWN files using tree-sitter -*- lexical-binding: t; -*-
 
 ;; Version: 0.1.0
 ;; Package-Requires: ((emacs "29.1"))
@@ -27,6 +27,17 @@
 ;; TODO impleting highlight, heading ID,  DEfiniton list, emoji, subscript, superscript
 
 ;; BUG escape delimiter failed in code inline
+
+;; Features
+;;
+;; * Indent
+;; * IMenu
+;; * Navigation
+;; * Which-function
+;; * Flymake
+;; * Tree-sitter parser installation helper
+;; * PHP built-in server support
+;; * Shell interaction: execute PHP code in a inferior PHP process
 
 ;;; Code:
 
@@ -215,15 +226,15 @@
 ;;   "Face for LaTeX expressions."
 ;;   :group 'markdown-ts-faces)
 ;;
-;; (defface markdown-metadata-key
-;;   '((t (:inherit font-lock-variable-name-face)))
-;;   "Face for metadata keys."
-;;   :group 'markdown-ts-faces)
+(defface markdown-metadata-key
+  '((t (:inherit font-lock-property-use-face)))
+  "Face for metadata keys."
+  :group 'markdown-ts-faces)
 ;;
-;; (defface markdown-metadata-value
-;;   '((t (:inherit font-lock-string-face)))
-;;   "Face for metadata values."
-;;   :group 'markdown-ts-faces)
+(defface markdown-metadata-value
+  '((t (:inherit font-lock-string-face)))
+  "Face for metadata values."
+  :group 'markdown-ts-faces)
 ;;
 ;; (defface markdown-gfm-checkbox
 ;;   '((t (:inherit font-lock-builtin-face)))
@@ -250,19 +261,29 @@
 ;;   "Face for HTML attribute values."
 ;;   :group 'markdown-ts-faces)
 ;;
-;; (defface markdown-html-entity
-;;   '((t (:inherit font-lock-variable-name-face)))
-;;   "Face for HTML entities."
-;;   :group 'markdown-ts-faces);;
+(defface markdown-html-entity
+  '((t (:inherit font-lock-variable-name-face)))
+  "Face for HTML entities."
+  :group 'markdown-ts-faces);;
 
 
 
-;;; markdown-ts-mode config
+;;; Syntax table
 
 (defvar markdown--treesit-syntax-table
   (let ((table (make-syntax-table)))
     table)
   "Syntax table for markdown files.")
+
+
+
+;;; Indent
+
+(defvar markdown--treesit-indent-rules
+  nil)
+
+
+;;; Font-lock
 
 (defvar markdown--treesit-font-lock-settings
   (treesit-font-lock-rules
@@ -343,11 +364,6 @@
    '((backslash_escape) @markdown-escape)
 
    :language 'markdown-inline
-   :feature 'comment
-   '(((html_tag) @text (:match "^<!--.*-->$" @text))
-     @markdown-comment)
-
-   :language 'markdown-inline
    :feature 'footnote
    '((shortcut_link
       (link_text) @text
@@ -394,7 +410,9 @@
      (full_reference_link
       (link_text) @markdown-link-text
       (link_label) @markdown-reference)
-     (full_reference_link ["[" "]"] @markdown-link-bracket))
+     (full_reference_link ["[" "]"] @markdown-link-bracket)
+
+     (uri_autolink) @markdown-link-url)
 
    :language 'markdown-inline
    :feature 'image
@@ -404,16 +422,32 @@
      (image (link_label) @markdown-reference)
      (image ["[" "]" "(" ")" "!"] @markdown-link-bracket))
 
-   ;; :language 'markdown-inline
-   ;; :feature 'html_tag
-   ;; '((html_tag) @markdown-html-entity)
+   :language 'html
+   :feature 'comment
+   '(
+     ;; ((html_tag) @text (:match "^<!--.*-->$" @text))
+     (comment)
+     @markdown-comment)
 
-   ;; :language 'yaml
-   ;; :feature 'metadata
-   ;; '((block_mapping
-   ;;    (block_mapping_pair
-   ;;     key: (_) @font-lock-property-face
-   ;;     value: (_) @font-lock-string-face)))
+
+   :language 'html
+   :feature 'html_tag
+   '((element) @markdown-html-entity)
+
+   :language 'yaml
+   :feature 'metadata
+   '([(boolean_scalar) (null_scalar)] @font-lock-constant-face
+     (block_mapping_pair
+      key: (_) @markdown-metadata-key
+      value: (_) @markdown-metadata-value)
+     (flow_mapping
+      (_ key: (_) @markdown-metadata-key
+         value: (_) @markdown-metadata-value))
+     (flow_sequence
+      (_ key: (_) @markdown-metadata-key
+         value: (_) @markdown-metadata-value)
+      ["[" "]"] @font-lock-type-face)
+     )
 
    )
   "")
@@ -422,16 +456,13 @@
 ;;   "Check if NODE is a valid entry to imenu."
 ;;   (equal (treesit-node-type (treesit-node-parent node))
 ;;          "atx_heading"))
-;; 
+;;
 ;; (defun markdown-ts-imenu-name-function (node)
 ;;   "Return an imenu entry if NODE is a valid header."
 ;;   (let ((name (treesit-node-text node)))
 ;;     (if (markdown-ts-imenu-node-p node)
 ;;         (thread-first (treesit-node-parent node)(treesit-node-text))
 ;;       name)))
-
-(defvar markdown--treesit-indent-rules
-  nil)
 
 ;;;###autoload
 (define-derived-mode markdown-ts-mode fundamental-mode "markdown-ts"
@@ -445,16 +476,29 @@ You can install the parsers with M-x
 `markdown-ts-mode-install-parsers'"))
 
   (setq-local treesit-primary-parser (treesit-parser-create 'markdown))
-  (treesit-parser-create 'markdown-inline)
-  ;; (treesit-parser-create 'html)
-  ;; (treesit-parser-create 'yaml)
+  ;; (treesit-parser-create 'markdown-inline)
 
-  ;; injected parser ranges
+  ;; define the injected parser ranges
   (setq-local treesit-range-settings
               (treesit-range-rules
+               :embed 'markdown-inline
+               :host 'markdown
+               '((inline) @cap)
+
                :embed 'html
                :host 'markdown
-               ))
+               '((html_block) @cap)
+
+               :embed 'yaml
+               :host 'markdown
+               '((minus_metadata) @cap)
+
+               :embed 'toml
+               :host 'markdown
+               '((plus_metadata) @cap)))
+
+  ;; (setq-local treesit-language-at-point-function
+  ;;             #'markdown-ts-mode--language-at-point)
 
   ;; Comments
   (setq-local comment-start "<!-- ")
@@ -478,15 +522,12 @@ You can install the parsers with M-x
   ;; Font-lock.
   (setq-local treesit-font-lock-settings markdown--treesit-font-lock-settings)
   (setq-local treesit-font-lock-feature-list
-              '((comment delimiter escape
-                         ;; metadata
-                         )
+              '((comment delimiter escape html_tag metadata)
                 ;; basic syntax
                 (heading ordered_list unordered_list bold italic blockquote
                          code_inline horizontal_rule link image reference)
                 ;; extended syntax
                 (table strikethrough footnote code_block task_list)
-
                 ;; (wiki gfm)
                 ))
 
