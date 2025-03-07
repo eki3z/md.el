@@ -187,12 +187,27 @@ print("hellow, world")
 
 ## Tables
 
+- simple
+
 | Column 1 | Column 2 | Column 3 |
 |----------|----------|----------|
 | Row 1    | Data 1   | Data 2   |
 | Row 2    | Data 3   | Data 4   |
 
+- nested
+
+| Column 1 | Column 2 | Column 3 |
+|----------|----------|----------|
+| `ccv`    | [c]("c") | Data 2   |
+| Row 2    | Data 3   | Data 4   |
+
+|works        |works        |doesn't work  |
+|-------------|-------------|--------------|
+|[name](/link)|[[/link]]    |[[/link|name]]|
+
+works: [[/link|name]]
 ---
+
 
 ## Horizontal Rules
 You can create a horizontal rule with:

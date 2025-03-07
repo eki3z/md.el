@@ -252,11 +252,6 @@ Wiki_link and tags are included."
   "Face for table headers."
   :group 'md-ts-faces)
 
-(defface md-ts-table-content
-  '((t (:inherit default)))
-  "Face for table content."
-  :group 'md-ts-faces)
-
 (defface md-ts-table-delimiter
   '((t (:inherit (md-delimiter bold))))
   "Face for tables delimiter."
@@ -380,7 +375,6 @@ Wiki_link and tags are included."
    :language 'markdown
    :feature 'table
    '((pipe_table_header (pipe_table_cell) @md-ts-table-header)
-     (pipe_table_row (pipe_table_cell) @md-ts-table-content)
      (pipe_table (_ "|" @md-ts-table-delimiter))
      (pipe_table_delimiter_cell "-" @md-ts-table-delimiter))
 
@@ -616,7 +610,8 @@ NODE, OVERRIDE, START, END please refer to `font-lock-keywords'."
 (defvar md-ts-mode--embedded-range-rules
   '((:embed 'markdown-inline
      :host 'markdown
-     '((inline) @cap))
+     '((inline) @cap
+       (pipe_table_row (pipe_table_cell) @cap)))
 
     (:embed 'html
      :host 'markdown
