@@ -1,45 +1,32 @@
-# markdown
+# WIP
 
-[![License GPL 3](https://img.shields.io/badge/license-GPL_3-green.svg?style=flat)](LICENSE)
-[![MELPA](http://melpa.org/packages/package-name-badge.svg)](http://melpa.org/#/package-name)
+## markdown for emacs
 
-A emacs package template for Github repos
-clone this repo and replace string "markdown" with your package name
+This package provide markdown tools based on tree-sitter.
 
-<!-- markdown-toc start -->
+- `md-ts-mode`
 
-## Contents
+- `md-toc`
 
-- [markdown](#markdown)
-  - [Screenshot](#screenshot)
-  - [Install](#install)
-    - [dependencies](#dependencies)
-    - [package](#package)
-  - [Usage](#usage)
-  - [Todo](#todo)
-  - [FAQ](#faq)
+## dependencies
 
-<!-- markdown-toc end -->
-
-## Screenshot
-
-## Install
-
-### dependencies
-
-### package
-
-- Manually
-
-Clone and add to `load-path`, require the package.
-
-- Melpa
-
-This package is available on [MELPA]. Install with `M-x package-install` `RET` `markdown` within Emacs.
+- emacs, version > 30.1
+- tree-sitter grammar for `markdown` and `markdown-inline`
 
 ## Usage
 
-## Todo
+Install parsers with `md-ts-mode-install-parsers`, include
 
-## FAQ
+- markdown
+- markdown-inline
+- html (optional)
+- yaml (optional)
+- toml (optional)
+
+
+```elisp
+(require 'md-ts-mode)
+(require 'md-toc)
+(add-hook 'md-ts-mode-hook #'md-toc-mode)
+```
 
