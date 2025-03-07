@@ -233,12 +233,13 @@ Wiki_link and tags are included."
   :group 'md-ts-faces)
 
 (defface md-ts-code-inline
-  '((t (:inherit (md-code-block font-lock-string-face))))
+  '((t (:inherit (md-ts-code-block font-lock-string-face)
+        :extend nil)))
   "Face for code inline section."
   :group 'md-ts-faces)
 
 (defface md-ts-code-delimiter
-  '((t (:inherit (md-delimiter bold))))
+  '((t (:inherit (md-ts-delimiter bold))))
   "Face for code block delimiters."
   :group 'md-ts-faces)
 
@@ -253,7 +254,7 @@ Wiki_link and tags are included."
   :group 'md-ts-faces)
 
 (defface md-ts-table-delimiter
-  '((t (:inherit (md-delimiter bold))))
+  '((t (:inherit (md-ts-delimiter bold))))
   "Face for tables delimiter."
   :group 'md-ts-faces)
 
@@ -308,7 +309,7 @@ Wiki_link and tags are included."
   :group 'md-ts-faces)
 
 (defface md-ts-horizontal-rule
-  '((t (:inherit (md-delimiter bold))))
+  '((t (:inherit (md-ts-delimiter bold))))
   "Face for horizontal rules."
   :group 'md-ts-faces)
 
