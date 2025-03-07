@@ -108,25 +108,21 @@ Wiki_link and tags are included."
 
 (defvar md-ts-mode--syntax-table
   (let ((st (make-syntax-table text-mode-syntax-table)))
-    ;; Inherit from text-mode syntax table as a base
     (modify-syntax-entry ?\" "." st)  ; Treat " as punctuation (not string delimiter)
-    (modify-syntax-entry ?\' "." st)  ; Treat ' as punctuation
-    ;; Word constituents (letters, numbers, etc. are inherited)
-    (modify-syntax-entry ?- "w" st)   ; Hyphens are part of words (e.g., "well-known")
-    (modify-syntax-entry ?_ "w" st)   ; Underscores are part of words (e.g., "_emphasis_")
-    ;; Markdown-specific markers
-    (modify-syntax-entry ?* "." st)   ; Emphasis (*bold*, *italic*) as punctuation
-    (modify-syntax-entry ?# "." st)   ; Heading marker (#) as punctuation
-    (modify-syntax-entry ?` "\"" st)  ; Backtick (`) as string delimiter for inline code
-    (modify-syntax-entry ?< "." st)   ; < for HTML tags or links as punctuation
-    (modify-syntax-entry ?> "." st)   ; > for blockquotes or HTML tags as punctuation
-    (modify-syntax-entry ?\[ "(" st)   ; [ for links as open parenthesis
-    (modify-syntax-entry ?\] ")" st)   ; ] for links as close parenthesis
-    (modify-syntax-entry ?\( "(" st)   ; ( for link URLs as open parenthesis
-    (modify-syntax-entry ?\) ")" st)   ; ) for link URLs as close parenthesis
-    (modify-syntax-entry ?| "." st)   ; | for tables as punctuation
-    (modify-syntax-entry ?+ "." st)   ; + for lists as punctuation
-    (modify-syntax-entry ?\n ">" st)  ; Newline as comment-end (for paragraph breaks)
+    ;; TODO set more rules
+    ;; (modify-syntax-entry ?\' "." st)  ; Treat ' as punctuation
+    ;; ;; Word constituents (letters, numbers, etc. are inherited)
+    ;; (modify-syntax-entry ?- "w" st)   ; Hyphens are part of words (e.g., "well-known")
+    ;; (modify-syntax-entry ?_ "w" st)   ; Underscores are part of words (e.g., "_emphasis_")
+    ;; ;; Markdown-specific markers
+    ;; (modify-syntax-entry ?* "." st)   ; Emphasis (*bold*, *italic*) as punctuation
+    ;; (modify-syntax-entry ?# "." st)   ; Heading marker (#) as punctuation
+    ;; ;; (modify-syntax-entry ?` "\"" st)  ; Backtick (`) as string delimiter for inline code
+    ;; (modify-syntax-entry ?< "." st)   ; < for HTML tags or links as punctuation
+    ;; (modify-syntax-entry ?> "." st)   ; > for blockquotes or HTML tags as punctuation
+    ;; (modify-syntax-entry ?| "." st)   ; | for tables as punctuation
+    ;; (modify-syntax-entry ?+ "." st)   ; + for lists as punctuation
+    ;; (modify-syntax-entry ?\n ">" st)  ; Newline as comment-end (for paragraph breaks)
     st)
   "Syntax table for `md-ts-mode'.")
 
@@ -710,7 +706,7 @@ node types like \"atx_h1_marker\", and EXTRACTOR is `md-ts-heading-name'."
 ;; Major mode
 
 ;;;###autoload
-(define-derived-mode md-ts-mode fundamental-mode "MD"
+(define-derived-mode md-ts-mode text-mode "MD"
   "Major mode for editing markdown, powered by tree-sitter."
   :group 'md
   :syntax-table md-ts-mode--syntax-table
