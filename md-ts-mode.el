@@ -361,9 +361,8 @@ Wiki_link and tags are included."
      (atx_heading (atx_h4_marker)) @md-ts-header-4
      (atx_heading (atx_h5_marker)) @md-ts-header-5
      (atx_heading (atx_h6_marker)) @md-ts-header-6
-     (setext_h1_underline) @md-ts-header-1
-     (setext_h2_underline) @md-ts-header-2
-     (setext_heading (paragraph) @md-ts-header-1))
+     (setext_heading (setext_h1_underline)) @md-ts-header-1
+     (setext_heading (setext_h2_underline)) @md-ts-header-2)
 
    :language 'markdown
    :feature 'blockquote

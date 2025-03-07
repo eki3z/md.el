@@ -50,6 +50,7 @@ draft: false
          - [fenced code block](#fenced-code-block)
          - [indented code block](#indented-code-block)
    - [Tables](#tables)
+   - [setext headings](#setext-headings)
    - [Horizontal Rules](#horizontal-rules)
    - [Tasks Lists](#tasks-lists)
    - [Escaping Characters](#escaping-characters)
@@ -198,12 +199,15 @@ print("hellow, world")
 
 | Column 1 | Column 2 | Column 3 |
 |----------|----------|----------|
-| `ccv`    | [c]("c") | Data 2   |
+| `ccv`    | [c](c)   | Data 2   |
 | Row 2    | Data 3   | Data 4   |
 
 |works        |works        |doesn't work  |
 |-------------|-------------|--------------|
 |[name](/link)|[[/link]]    |[[/link|name]]|
+
+
+## setext headings
 
 works: [[/link|name]]
 ---
