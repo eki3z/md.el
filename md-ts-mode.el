@@ -547,6 +547,15 @@ Wiki_link and tags are included."
      ((ERROR) @hr (:equal "+++" @hr)) @md-ts-horizontal-rule))
   "Tree-sitter Font-lock settings for toml metadata.")
 
+(defun md-ts-mode--markdown-inline-p (point)
+  "Return non-nil if language at POINT should be markdown-inline."
+  (when-let* ((node (treesit-node-at point 'markdown))
+              (type (treesit-node-type node)))
+    (or (string= type "inline")
+        (and (string= type "pipe_table_cell")
+             (string= (treesit-node-type (treesit-node-parent node))
+                      "pipe_table_row")))))
+
 (defun md-ts-mode--language-at-point (point)
   "Return the language at POINT for `md-ts-mode'."
   (if-let* ((node (treesit-node-at point 'markdown)))
@@ -554,7 +563,7 @@ Wiki_link and tags are included."
         ("minus_metadata" 'yaml)
         ("plus_metadata" 'toml)
         ("html_block" 'html)
-        ("inline"
+        ((guard (md-ts-mode--markdown-inline-p point))
          (if-let* ((node-i (treesit-node-at point 'markdown-inline)))
              (pcase (treesit-node-type node-i)
                ("html_tag" 'html)
