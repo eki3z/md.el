@@ -428,14 +428,13 @@ Wiki_link and tags are included."
 
     :language 'markdown-inline
     :feature 'code_inline
-    :override t
-    '((code_span) @md-ts-code-inline
-      (code_span_delimiter) @md-ts-delimiter)
+    '((code_span) @md-ts-code-inline)
 
     :language 'markdown-inline
     :feature 'delimiter
     :override t
     '((emphasis_delimiter) @md-ts-delimiter
+      (code_span_delimiter) @md-ts-delimiter
       (hard_line_break) @md-ts-line-break)
 
     :language 'markdown-inline
