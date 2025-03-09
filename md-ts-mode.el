@@ -614,6 +614,8 @@ NODE, OVERRIDE, START, END please refer to `font-lock-keywords'."
 (defvar md-ts-mode--embedded-range-rules
   '((:embed 'markdown-inline
      :host 'markdown
+     ;; NOTE use local parser to parse code_span precisely
+     :local t
      '((inline) @cap
        (pipe_table_row (pipe_table_cell) @cap)))
 
@@ -624,6 +626,7 @@ NODE, OVERRIDE, START, END please refer to `font-lock-keywords'."
     ;; FIXME failed to capture html in inline sometimes
     (:embed 'html
      :host 'markdown-inline
+     :local t
      '((html_tag) @cap))
 
     (:embed 'yaml
