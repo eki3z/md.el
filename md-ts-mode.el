@@ -697,9 +697,8 @@ START, END, LOUDLY is same with"
 (defun md-ts-mode--heading-name (node)
   "Return the text content of the heading NODE's inline content."
   (when-let* ((parent (treesit-node-parent node))
-              (inline (treesit-node-child-by-field-name parent "heading_content"))
-              ((string= (treesit-node-type inline) "inline")))
-    (treesit-node-text inline)))
+              (target (treesit-node-child-by-field-name parent "heading_content")))
+    (string-trim (treesit-node-text target))))
 
 (defun md-ts-mode--imenu-headings ()
   "Return a list of Markdown heading rules for imenu integration.
@@ -710,7 +709,8 @@ node types like \"atx_h1_marker\", and EXTRACTOR is `md-ts-heading-name'."
         rules)
     (dolist (level heading-levels rules)
       (push (list (format "H%d" level)
-                  (format "\\`atx_h%d_marker\\'" level)
+                  (format "\\`\\(atx_h%d_marker\\|setext_h%d_underline\\)\\'"
+                          level level)
                   nil
                   #'md-ts-mode--heading-name)
             rules))
