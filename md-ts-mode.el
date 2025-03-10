@@ -135,7 +135,6 @@ Wiki_link and tags are included."
      ((node-is "plus_metadata") column-0 0)
      ((node-is "atx_heading") column-0 0)
 
-     ;; NOTE usually 0 -3 space is allowed in horizontal rule
      ((node-is "thematic_break") column-0 0)
 
      ((parent-is "list_item") parent-bol md-ts-mode-indent-offset)
@@ -502,7 +501,7 @@ Wiki_link and tags are included."
      (attribute_name) @md-ts-html-attr-name
      (attribute_value) @md-ts-html-attr-value
      (start_tag ["<" ">"] @md-ts-html-tag-delimiter)
-     ;; FIXME failed
+     ;; FIXME failed end_tag
      (end_tag ["</" ">"] @md-ts-html-tag-delimiter)))
   "Tree-sitter Font-lock settings for html parser.")
 
@@ -692,13 +691,21 @@ START, END, LOUDLY is same with"
   (font-lock-fontify-keywords-region start end loudly))
 
 
+;; Navigation
+
+(defun md-ts-mode--defun-name (node)
+  "Return heading NODE name for `md-ts-mode'."
+  (when-let* (((string-match-p treesit-defun-type-regexp (treesit-node-type node)))
+              (target (treesit-node-child-by-field-name node "heading_content")))
+    (string-trim (treesit-node-text target))))
+
+
 ;; Imenu
 
 (defun md-ts-mode--heading-name (node)
   "Return the text content of the heading NODE's inline content."
-  (when-let* ((parent (treesit-node-parent node))
-              (target (treesit-node-child-by-field-name parent "heading_content")))
-    (string-trim (treesit-node-text target))))
+  (when-let* ((parent (treesit-node-parent node)))
+    (md-ts-mode--defun-name parent)))
 
 (defun md-ts-mode--imenu-headings ()
   "Return a list of Markdown heading rules for imenu integration.
@@ -715,9 +722,6 @@ node types like \"atx_h1_marker\", and EXTRACTOR is `md-ts-heading-name'."
                   #'md-ts-mode--heading-name)
             rules))
     (nreverse rules)))
-
-
-;; Navigation
 
 
 ;; Major mode
@@ -774,19 +778,19 @@ You can install the parser with M-x `md-ts-mode-install-parsers'"))
                 (escape reference footnote metadata_yaml metadata_toml)
                 (wiki_link tag)))
 
+  ;; Navigation
+  (setq-local treesit-defun-type-regexp (rx (or "atx_heading" "setext_heading")))
+  (setq-local treesit-defun-name-function #'md-ts-mode--defun-name)
+
+  ;; (setq-local treesit-thing-settings
+  ;;             `((markdown
+  ;;                (sentence "pair"))))
+
   ;; Imenu
   (setq-local treesit-simple-imenu-settings `(,@(md-ts-mode--imenu-headings)))
 
   ;; Outline
   (setq-local treesit-outline-predicate "section")
-
-  ;; ;; Navigation
-  ;; (setq-local treesit-defun-type-regexp
-  ;;             (rx (or "pair" "object")))
-  ;; (setq-local treesit-defun-name-function #'md-ts-mode--defun-name)
-  ;; (setq-local treesit-thing-settings
-  ;;             `((markdown
-  ;;                (sentence "pair"))))
 
   (treesit-major-mode-setup))
 
