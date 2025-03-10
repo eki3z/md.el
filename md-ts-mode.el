@@ -699,6 +699,33 @@ START, END, LOUDLY is same with"
               (target (treesit-node-child-by-field-name node "heading_content")))
     (string-trim (treesit-node-text target))))
 
+(defvar md-ts-mode--thing-settings
+  `((markdown
+     (sentence ,(rx (or "paragraph" "list" "pipe_table" "fenced_code_block"
+                        "indented_code_block")))
+     (list ,(rx (or  "pipe_table_row" "pipe_table_header"
+                     "pipe_table_delimiter_row")))
+     (sexp ,(rx (or "list_item"))))
+    (markdown-inline
+     (sexp ,(rx (or "inline_link" "full_reference_link" "collapsed_reference_link"
+                    "uri_autolink" "email_autolink" "shortcut_link" "image"
+                    "code_span"))))
+    (html
+     (sexp ,(regexp-opt '("element" "text" "attribute" "value")))
+     (list ,(rx (or "element" "comment")))
+     (sentence ,(rx (and bos (or "tag_name" "attribute") eos)))
+     (text ,(regexp-opt '("comment" "text"))))
+    (toml
+     (list
+      ,(rx bos (or "array" "inline_table") eos))
+     (sentence
+      ,(rx bos (or "pair") eos))
+     (text
+      ,(rx bos (or "comment") eos)))
+    (yaml
+     (list ,(rx (or "block_mapping_pair" "flow_sequence")))
+     (sentence ,"block_mapping_pair"))))
+
 
 ;; Imenu
 
@@ -781,10 +808,7 @@ You can install the parser with M-x `md-ts-mode-install-parsers'"))
   ;; Navigation
   (setq-local treesit-defun-type-regexp (rx (or "atx_heading" "setext_heading")))
   (setq-local treesit-defun-name-function #'md-ts-mode--defun-name)
-
-  ;; (setq-local treesit-thing-settings
-  ;;             `((markdown
-  ;;                (sentence "pair"))))
+  (setq-local treesit-thing-settings md-ts-mode--thing-settings)
 
   ;; Imenu
   (setq-local treesit-simple-imenu-settings `(,@(md-ts-mode--imenu-headings)))
