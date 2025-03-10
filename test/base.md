@@ -12,17 +12,6 @@ draft: false
 
 # Markdown Grammar Guide
 
-## Headers
-
-# This is an H1
-## This is an H2
-### This is an H3
-#### This is an H4
-##### This is an H5
-###### This is an H6
-
----
-
 <!-- md-toc start - Don't edit this section. Run M-x md-toc-update-doc -->
 
 **Table of Contents**
@@ -35,6 +24,8 @@ draft: false
          - [This is an H4](#this-is-an-h4)
             - [This is an H5](#this-is-an-h5)
                - [This is an H6](#this-is-an-h6)
+- [setext heading 1](#setext-heading-1)
+- [setext heading 2](#setext-heading-2)
          - [todo](#todo)
       - [My Great Heading](#my-great-heading)
    - [Emphasis](#emphasis)
@@ -64,6 +55,25 @@ draft: false
 <!-- md-toc end -->
 
 This is text <!-- a comment --> and more <p style="color:blue;">cccc</p> text.
+
+## Headers
+
+# This is an H1
+## This is an H2
+### This is an H3
+#### This is an H4
+##### This is an H5
+###### This is an H6
+
+---
+
+
+
+setext heading 1
+==============
+
+setext heading 2
+===
 
 #### todo
 
@@ -210,6 +220,7 @@ print("hellow, world")
 ## setext headings
 
 works: [[/link|name]]
+
 ---
 
 

@@ -35,7 +35,6 @@ GitHub Flavored Markdown extends standard Markdown with additional features like
       - [Inline Code](#inline-code)
       - [Fenced Code Blocks](#fenced-code-blocks)
       - [Syntax Highlighting](#syntax-highlighting)
-- [Python example](#python-example)
    - [Tables](#tables)
    - [Blockquotes](#blockquotes)
    - [Horizontal Rules](#horizontal-rules)
@@ -99,19 +98,19 @@ GitHub Flavored Markdown extends standard Markdown with additional features like
 Use `inline code` like this.
 
 ### Fenced Code Blocks
-\`\`\`javascript
+```javascript
 // JavaScript example
 function greet() {
   console.log("Hello, GitHub!");
 }
-\`\`\`
+```
 
 ### Syntax Highlighting
-\`\`\`python
+```python
 # Python example
 def hello():
     print("Hello, GitHub!")
-\`\`\`
+```
 
 ---
 
