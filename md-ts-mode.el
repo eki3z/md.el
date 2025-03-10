@@ -225,6 +225,11 @@ Wiki_link and tags are included."
   "Face for code block section."
   :group 'md-ts-faces)
 
+(defface md-ts-indented-block
+  '((t (:inherit (italic md-ts-code-block bold))))
+  "Face for indented block section."
+  :group 'md-ts-faces)
+
 (defface md-ts-code-inline
   '((t (:inherit (md-ts-code-block font-lock-string-face)
         :extend nil)))
@@ -399,7 +404,7 @@ Wiki_link and tags are included."
      (info_string (language) @md-ts-code-language)
      ;; TODO rewrite codeblock highlight natively like org-mode
      (code_fence_content) @font-lock-string-face
-     (indented_code_block) @md-ts-blockquote))
+     (indented_code_block) @md-ts-mode--fontify-indented-block))
   "Tree-sitter Font-lock settings for markdown and inline part.")
 
 (defvar md-ts-mode--markdown-inline-font-lock-settings
@@ -613,6 +618,25 @@ NODE, OVERRIDE, START, END please refer to `font-lock-keywords'."
           `((,n-start ,(1+ n-start) md-ts-delimiter)
             (,(1+ n-start) ,(1- n-end) ,label-face)
             (,(1- n-end) ,n-end md-ts-delimiter)))))
+
+;; HACK remove trailing newlines for (indented_code_block)
+(defun md-ts-mode--fontify-indented-block (node override start end &rest _)
+  "Fontify an indented_code_block NODE, excluding trailing newlines.
+NODE, OVERRIDE, START, END refer to `font-lock-keywords' documentation."
+  (let* ((n-start (treesit-node-start node))
+         (n-end-raw (treesit-node-end node))
+         (n-end (save-excursion
+                  (goto-char n-end-raw)
+                  ;; Skip all trailing newlines
+                  (while (and (> (point) n-start)
+                              (eq (char-before) ?\n))
+                    (backward-char 1))
+                  ;; Move forward to include one newline, if possible
+                  (when (< (point) n-end-raw)
+                    (forward-char 1))
+                  (point))))
+    (treesit-fontify-with-override n-start n-end 'md-ts-indented-block
+                                   override start end)))
 
 (defvar md-ts-mode--embedded-range-rules
   '((:embed 'markdown-inline
