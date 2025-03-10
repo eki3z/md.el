@@ -39,11 +39,9 @@
 
 ;; TODO supports more functions
 ;; * md-indent-function
-;; * navigation, reference,footnote jump
 ;; * markdown view mode
 
 ;; BUG
-;; * escape delimiter parsed failed in code inline
 ;; * html parsed failed sometimes in code inline
 
 ;;; Code:
@@ -604,7 +602,7 @@ Wiki_link and tags are included."
     (treesit-node-text t)))
 
 (defun md-ts-mode--fontify-label (node override start end &rest _)
-  "Function to fonfity matched link lable or footnote label.
+  "Function to fontify matched link label or footnote label.
 NODE, OVERRIDE, START, END please refer to `font-lock-keywords'."
   (let* ((n-start (treesit-node-start node))
          (n-end (treesit-node-end node))
@@ -685,7 +683,7 @@ NODE, OVERRIDE, START, END please refer to `font-lock-keywords'."
 ;;               (set-match-data (list start end)) t)))))))
 
 (defun md-ts-mode--fontify-region-hybridly (start end &optional loudly)
-  "Fontify markdown buffer with both tree-sitter and traditonal keywords.
+  "Fontify markdown buffer with both tree-sitter and traditional keywords.
 START, END, LOUDLY is same with"
   (treesit-font-lock-fontify-region start end loudly)
   (font-lock-fontify-keywords-region start end loudly))
