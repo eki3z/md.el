@@ -187,14 +187,14 @@ Wiki_link and tags are included."
   "Face for header 6th level."
   :group 'md-ts-faces)
 
-(defface md-ts-strikethrough
-  '((t (:strike-through t)))
-  "Face for strikethrough text."
+(defface md-ts-delimiter
+  '((t (:inherit (font-lock-delimiter-face bold))))
+  "Face for delimiters."
   :group 'md-ts-faces)
 
-(defface md-ts-delimiter
-  '((t (:inherit font-lock-delimiter-face)))
-  "Face for delimiters."
+(defface md-ts-strikethrough
+  `((t (:strike-through ,(face-foreground 'font-lock-delimiter-face))))
+  "Face for strikethrough text."
   :group 'md-ts-faces)
 
 (defface md-ts-ordered-list
@@ -421,8 +421,8 @@ Wiki_link and tags are included."
     :language 'markdown-inline
     :feature 'emphasis
     :override 'append
-    '((strong_emphasis) @bold
-      (emphasis) @italic
+    '((emphasis) @italic
+      (strong_emphasis) @bold
       (strikethrough) @md-ts-strikethrough)
 
     :language 'markdown-inline
