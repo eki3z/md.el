@@ -1,4 +1,4 @@
-;;; md-toc.el --- TOc management for md-ts-mode -*- lexical-binding: t -*-
+;;; md-toc.el --- TOC management for md-ts-mode -*- lexical-binding: t -*-
 
 ;; Author: Eki Zhang <liuyinz95@gmail.com>
 ;; Created: 2025-03-02 05:13:34
@@ -62,20 +62,23 @@ Each entry is a list of (INDENT-LEVEL TITLE LINK MARKER), where:
      entries)))
 
 (defun md-toc--range ()
-  "Return markdown toc position as (START . END) if exists, else nil."
-  (pcase-let* ((`(,toc-start ,_ ,toc-end) md-toc-template))
+  "Return markdown toc position as (START . END) if exists, else nil.
+Only return the first pair of TOC."
+  (pcase-let* ((`(,start ,_ ,end) md-toc-template))
     (when-let* (((derived-mode-p 'md-ts-mode))
                 (html-root (treesit-buffer-root-node 'html))
-                (anchors (treesit-filter-child
-                          html-root
-                          (lambda(x)
-                            (and (string= (treesit-node-type x) "comment")
-                                 (or (string= (treesit-node-text x t) toc-start)
-                                     (string= (treesit-node-text x t) toc-end))))
-                          t))
-                ((length= anchors 2)))
-      (cons (seq-min (mapcar #'treesit-node-start anchors))
-            (seq-max (mapcar #'treesit-node-end anchors))))))
+                (comments (treesit-filter-child
+                           html-root
+                           (lambda(x)
+                             (string= (treesit-node-type x) "comment")) t))
+                (toc-start (seq-find
+                            (lambda (x) (string= (treesit-node-text x) start))
+                            comments))
+                (toc-end (seq-find
+                          (lambda (x) (string= (treesit-node-text x) end))
+                          comments)))
+      (cons (treesit-node-start toc-start)
+            (treesit-node-end toc-end)))))
 
 (defun md-toc--enable-read-only (&optional disable)
   "Make markdown TOC part read only.
@@ -143,7 +146,8 @@ If optional arg DISABLE is non-nil, disable it."
 (defun md-toc-insert ()
   "Insert markdown TOC if not exists."
   (interactive nil md-ts-mode)
-  (unless (md-toc--range)
+  (if (md-toc--range)
+      (message "md-toc: TOC already exists.")
     (goto-char (pos-bol))
     (insert (md-toc--generate))
     (md-toc--enable-read-only)
@@ -153,20 +157,22 @@ If optional arg DISABLE is non-nil, disable it."
 (defun md-toc-delete ()
   "Delete the TOC of current buffer if find."
   (interactive nil md-ts-mode)
-  (when-let* ((region (md-toc--range))
-              (inhibit-read-only t))
-    (delete-region (car region) (cdr region))))
+  (if-let* ((region (md-toc--range))
+            (inhibit-read-only t))
+      (delete-region (car region) (cdr region))
+    (message "md-toc: TOC does not exist.")))
 
 ;;;###autoload
 (defun md-toc-update ()
   "Update markdown TOC if exists."
   (interactive nil md-ts-mode)
-  (when-let* ((region (md-toc--range))
-              ((not (md-toc--cache-latest-p))))
-    (save-excursion
-      (md-toc-delete)
-      (goto-char (car region))
-      (md-toc-insert))))
+  (if-let* ((region (md-toc--range))
+            ((not (md-toc--cache-latest-p))))
+      (save-excursion
+        (md-toc-delete)
+        (goto-char (car region))
+        (md-toc-insert))
+    (message "md-toc: TOC does not exist or is latest already.")))
 
 ;;;###autoload
 (defun md-toc-follow-link-at-point ()
