@@ -592,16 +592,16 @@ Wiki_link and tags are included."
 
 (defun md-ts-mode--get-fenced-language (node)
   "Return the language info of fenced code block NODE located."
-  (when-let* ((block (treesit-node-parent node))
-              (info (car (treesit-filter-child
-                          block
-                          (lambda (n) (string= (treesit-node-type n) "info_string"))
-                          t)))
-              (lang (car (treesit-filter-child
-                          info
-                          (lambda (n) (string= (treesit-node-type n) "language"))
-                          t))))
-    (treesit-node-text lang 'no-property)))
+  (thread-first
+    node
+    (treesit-node-parent)
+    (treesit-filter-child
+     (lambda (n) (string= (treesit-node-type n) "info_string")) t)
+    (car)
+    (treesit-filter-child
+     (lambda (n) (string= (treesit-node-type n) "language")) t)
+    (car)
+    (treesit-node-text t)))
 
 (defun md-ts-mode--fontify-label (node override start end &rest _)
   "Function to fonfity matched link lable or footnote label.
