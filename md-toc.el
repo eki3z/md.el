@@ -90,7 +90,7 @@ If optional arg DISABLE is non-nil, disable it."
 (defun md-toc--cache-latest-p ()
   "Return non-nil if entries is latest."
   (and md-toc--cache
-       (string= (cdr md-toc--cache) (buffer-hash))))
+       (equal (cdr md-toc--cache) (buffer-chars-modified-tick))))
 
 (defun md-toc--generate ()
   "Generate the Markdown TOC."
@@ -147,7 +147,7 @@ If optional arg DISABLE is non-nil, disable it."
     (goto-char (pos-bol))
     (insert (md-toc--generate))
     (md-toc--enable-read-only)
-    (setcdr md-toc--cache (buffer-hash))))
+    (setcdr md-toc--cache (buffer-chars-modified-tick))))
 
 ;;;###autoload
 (defun md-toc-delete ()
