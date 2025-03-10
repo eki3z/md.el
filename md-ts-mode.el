@@ -835,9 +835,6 @@ You can install the parser with M-x `md-ts-mode-install-parsers'"))
   ;; Imenu
   (setq-local treesit-simple-imenu-settings `(,@(md-ts-mode--imenu-headings)))
 
-  ;; Outline
-  (setq-local treesit-outline-predicate "section")
-
   (treesit-major-mode-setup))
 
 (derived-mode-add-parents 'md-ts-mode '(markdown-mode))
@@ -846,5 +843,4 @@ You can install the parser with M-x `md-ts-mode-install-parsers'"))
   (add-to-list 'auto-mode-alist '("\\.md\\'" . md-ts-mode)))
 
 (provide 'md-ts-mode)
-
 ;;; md-ts-mode.el ends here
