@@ -397,12 +397,12 @@ Wiki_link and tags are included."
    :language 'markdown
    :feature 'code_block
    :override 'append
-   '((indented_code_block) @md-ts-blockquote
-     (fenced_code_block) @md-ts-code-block
+   '((fenced_code_block) @md-ts-code-block
      (fenced_code_block_delimiter) @md-ts-code-delimiter
      (info_string (language) @md-ts-code-language)
      ;; TODO rewrite codeblock highlight natively like org-mode
-     (code_fence_content) @font-lock-string-face))
+     (code_fence_content) @font-lock-string-face
+     (indented_code_block) @md-ts-blockquote))
   "Tree-sitter Font-lock settings for markdown and inline part.")
 
 (defvar md-ts-mode--markdown-inline-font-lock-settings
@@ -428,13 +428,18 @@ Wiki_link and tags are included."
 
     :language 'markdown-inline
     :feature 'code_inline
-    '((code_span) @md-ts-code-inline)
+    :override t
+    '((code_span
+       :anchor (code_span_delimiter) @open @md-ts-delimiter
+       (:equal "`" @open)
+       (code_span_delimiter) @close @md-ts-delimiter
+       (:equal "`" @close) :anchor)
+      @md-ts-code-inline)
 
     :language 'markdown-inline
     :feature 'delimiter
     :override t
     '((emphasis_delimiter) @md-ts-delimiter
-      (code_span_delimiter) @md-ts-delimiter
       (hard_line_break) @md-ts-line-break)
 
     :language 'markdown-inline
@@ -497,6 +502,7 @@ Wiki_link and tags are included."
      (attribute_name) @md-ts-html-attr-name
      (attribute_value) @md-ts-html-attr-value
      (start_tag ["<" ">"] @md-ts-html-tag-delimiter)
+     ;; FIXME failed
      (end_tag ["</" ">"] @md-ts-html-tag-delimiter)))
   "Tree-sitter Font-lock settings for html parser.")
 
