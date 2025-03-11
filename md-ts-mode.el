@@ -203,12 +203,12 @@ Wiki_link and tags are included."
   :group 'md-ts-faces)
 
 (defface md-ts-blockquote
-  '((t (:inherit (italic default))))
+  '((t (:inherit (italic bold))))
   "Face for blockquote sections."
   :group 'md-ts-faces)
 
 (defface md-ts-blockquote-marker
-  '((t (:inherit (font-lock-builtin-face italic bold))))
+  '((t (:inherit (md-ts-blockquote font-lock-builtin-face))))
   "Face for blockquote markers."
   :group 'md-ts-faces)
 
@@ -218,7 +218,7 @@ Wiki_link and tags are included."
   :group 'md-ts-faces)
 
 (defface md-ts-indented-block
-  '((t (:inherit (italic md-ts-code-block bold))))
+  '((t (:inherit (md-ts-code-block bold))))
   "Face for indented block section."
   :group 'md-ts-faces)
 
