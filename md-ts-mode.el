@@ -3,7 +3,7 @@
 ;; Copyright (C) 2025 Eki Zhang
 
 ;; Author: Eki Zhang <liuyinz95@gmail.com>
-;; Homepage: https://github.com/eki3z/md
+;; Homepage: https://github.com/eki3z/md.el
 
 ;; This file is not a part of GNU Emacs.
 
