@@ -5,7 +5,7 @@
 ;; Author: Eki Zhang <liuyinz95@gmail.com>
 ;; Version: 0.1.0
 ;; Package-Requires: ((emacs "30.1"))
-;; Keywords: language tree-sitter
+;; Keywords: languages
 ;; Homepage: https://github.com/eki3z/md
 
 ;; This file is not a part of GNU Emacs.
