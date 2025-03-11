@@ -35,11 +35,7 @@
 ;; * superscript
 
 ;; TODO supports more functions
-;; * md-indent-function
 ;; * markdown view mode
-
-;; BUG
-;; * html parsed failed sometimes in code inline
 
 ;;; Code:
 
@@ -141,7 +137,6 @@ When fontifying a code block, the first available mode is used. An entry with
 (defvar md-ts-mode--syntax-table
   (let ((st (make-syntax-table text-mode-syntax-table)))
     (modify-syntax-entry ?\" "." st)  ; Treat " as punctuation (not string delimiter)
-    ;; TODO set more rules
     ;; (modify-syntax-entry ?\' "." st)  ; Treat ' as punctuation
     ;; ;; Word constituents (letters, numbers, etc. are inherited)
     ;; (modify-syntax-entry ?- "w" st)   ; Hyphens are part of words (e.g., "well-known")
@@ -436,7 +431,6 @@ When fontifying a code block, the first available mode is used. An entry with
    '((fenced_code_block) @md-ts-code-block
      (fenced_code_block_delimiter) @md-ts-code-delimiter
      (info_string (language) @md-ts-code-language)
-     ;; TODO rewrite codeblock highlight natively like org-mode
      (code_fence_content) @md-ts-mode--fontify-fenced-block
      (indented_code_block) @md-ts-mode--fontify-indented-block))
   "Tree-sitter Font-lock settings for markdown and inline part.")
@@ -613,13 +607,7 @@ When fontifying a code block, the first available mode is used. An entry with
 
     (:embed 'toml
      :host 'markdown
-     '((plus_metadata) @cap))
-
-    ;; TODO identify language by language info-string
-    ;; (:embed #'md-ts-mode--get-fenced-language
-    ;;  :host 'markdown
-    ;;  '((code_fence_content) @language))
-    ))
+     '((plus_metadata) @cap))))
 
 (defmacro md-ts-mode--get-range-rules ()
   "Return embedded range rules for `md-ts-mode'."
@@ -710,7 +698,6 @@ NODE, OVERRIDE, START, END refer to `font-lock-keywords' documentation."
     (treesit-fontify-with-override n-start n-end 'md-ts-indented-block
                                    override start end)))
 
-
 
 ;; fontify fenced_code_block natively
 
@@ -741,11 +728,6 @@ NODE, OVERRIDE, START, END refer to `font-lock-keywords' documentation."
       (push (cons language mode) md-ts-mode--language-cache)))
   (cdr (assoc language md-ts-mode--language-cache)))
 
-;; BUG
-;; - must edit and save, then fontify
-;; - too slowy
-;; - use font-lock-keywords instead
-
 ;; Based on `markdown-fontify-code-block-natively' from markdown-mode
 (defun md-ts-mode--fontify-fenced-block (node &rest _)
   "Fontify a fenced code block NODE using native mode highlighting.
@@ -771,7 +753,7 @@ state is preserved."
       (remove-text-properties start end '(face nil))
       (with-current-buffer
           (get-buffer-create
-           (format " *md-code-fontification:%s*" (symbol-name mode)))
+           (format " *md-ts-mode-fenced-buffer-%s*" (symbol-name mode)))
         (let ((inhibit-modification-hooks nil))
           (delete-region (point-min) (point-max))
           (insert text " ")) ;; so there's a final property change
@@ -797,6 +779,8 @@ state is preserved."
 START, END, LOUDLY is same with"
   (treesit-font-lock-fontify-region start end loudly)
   (font-lock-fontify-keywords-region start end loudly))
+
+;; TODO font-lock-keywords
 
 ;; (defun md-ts-mode--footnote-content-matcher (limit)
 ;;   "Find and set match data for footnote content up to LIMIT."
