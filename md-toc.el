@@ -104,12 +104,14 @@ Only return the first pair of TOC."
 (defun md-toc--enable-read-only (&optional disable)
   "Make markdown TOC part read only.
 If optional arg DISABLE is non-nil, disable it."
-  (when-let* ((region (md-toc--range))
-              (start (car region))
-              (end (cdr region)))
-    (if disable
-        (remove-text-properties start end '(read-only))
-      (put-text-property start end 'read-only t))))
+  (let ((modified (buffer-modified-p)))
+    (when-let* ((region (md-toc--range))
+                (start (car region))
+                (end (cdr region)))
+      (if disable
+          (remove-text-properties start end '(read-only))
+        (put-text-property start end 'read-only t)))
+    (set-buffer-modified-p modified)))
 
 (defun md-toc--cache-latest-p ()
   "Return non-nil if entries is latest."
