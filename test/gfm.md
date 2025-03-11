@@ -98,14 +98,13 @@ GitHub Flavored Markdown extends standard Markdown with additional features like
 Use `inline code` like this.
 
 ### Fenced Code Blocks
-```javascript
-// JavaScript example
-function greet() {
-  console.log("Hello, GitHub!");
-}
+
+```shell
+ls $HOME
 ```
 
 ### Syntax Highlighting
+
 ```python
 # Python example
 def hello():

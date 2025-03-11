@@ -177,14 +177,17 @@ Use `inline code` like this.
 
 #### fenced code block
 
-```javascript
-// Code example in JavaScript
-console.log("Hello, world!");
+```shell
+echo $HOME
 ```
 
 ```python
 # cdcd
 print("hellow, world")
+```
+
+```elisp
+(message "cc%d" 4)
 ```
 
 #### indented code block
