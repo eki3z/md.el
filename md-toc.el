@@ -1,9 +1,8 @@
 ;;; md-toc.el --- TOC management for md-ts-mode -*- lexical-binding: t -*-
 
+;; Copyright (C) 2025 Eki Zhang
+
 ;; Author: Eki Zhang <liuyinz95@gmail.com>
-;; Version: 0.1.0
-;; Package-Requires: ((emacs "30.1"))
-;; Keywords: outlines
 ;; Homepage: https://github.com/eki3z/md
 
 ;; This file is not a part of GNU Emacs.
@@ -38,11 +37,11 @@
 (defcustom md-toc-item-bullet "-"
   "Bullet marker used in the Markdown table of contents.
 Determines the unordered list style for TOC entries."
-  :group 'md-ts-mode
   :type '(choice
           (const :tag "Hyphen" "-")
           (const :tag "Asterisk" "*")
-          (const :tag "Plus" "+")))
+          (const :tag "Plus" "+"))
+  :group 'md)
 
 (defcustom md-toc-template
   '("<!-- md-toc start - Don't edit this section. Run M-x md-toc-update-doc -->"
@@ -50,10 +49,10 @@ Determines the unordered list style for TOC entries."
     "<!-- md-toc end -->")
   "Template for md toc, consisting of start delimiter, title, and end delimiter.
 Used to frame the TOC when inserted or updated via `md-toc-update-doc'."
-  :group 'md-ts-mode
   :type '(list (string :tag "Start Delimiter")
                (string :tag "Title")
-               (string :tag "End Delimiter")))
+               (string :tag "End Delimiter"))
+  :group 'md)
 
 
 (defvar-local md-toc--cache nil

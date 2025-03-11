@@ -3,9 +3,6 @@
 ;; Copyright (C) 2025 Eki Zhang
 
 ;; Author: Eki Zhang <liuyinz95@gmail.com>
-;; Version: 0.1.0
-;; Package-Requires: ((emacs "30.1"))
-;; Keywords: languages
 ;; Homepage: https://github.com/eki3z/md
 
 ;; This file is not a part of GNU Emacs.
@@ -82,24 +79,19 @@ commit and/or use different parsers.")
 
 ;;; Custom variables
 
-(defgroup md-ts nil
-  "Package for markdown related markup language."
-  :prefix "md-ts-"
-  :group 'text
-  :link '(url-link "ttps://github.com/eki3z/md"))
-
 (defcustom md-ts-mode-enable-extensions nil
   "If non-nil, enable all features provided by tree-sitter extensions.
 Wiki_link and tags are included."
   :type 'boolean
   :safe 'booleanp
-  :group 'md-ts)
+  :group 'md)
 
 (defcustom md-ts-mode-indent-offset 3
   "Number of spaces for each indentation step in `md-ts-mode'."
   :type 'natnum
   :safe 'natnump
-  :group 'md-ts)
+  :group 'md)
+
 
 
 ;;; Syntax table
@@ -147,7 +139,7 @@ Wiki_link and tags are included."
 
 (defgroup md-ts-faces nil
   "Faces used in `md-ts-mode'."
-  :group 'md-ts
+  :group 'md
   :group 'faces)
 
 (defface md-ts-header-base
