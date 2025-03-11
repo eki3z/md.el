@@ -333,10 +333,10 @@ Wiki_link and tags are included."
   "Face for HTML attribute values."
   :group 'md-ts-faces)
 
-(defface md-ts-line-break
-  '((t (:inherit default)))
-  "Face for hard line breaks."
-  :group 'md-ts-faces)
+;; (defface md-ts-line-break
+;;   '((t (:inherit default)))
+;;   "Face for hard line breaks."
+;;   :group 'md-ts-faces)
 
 (defvar md-ts-mode--markdown-font-lock-settings
   (treesit-font-lock-rules
@@ -434,7 +434,8 @@ Wiki_link and tags are included."
     :feature 'delimiter
     :override t
     '((emphasis_delimiter) @md-ts-delimiter
-      (hard_line_break) @md-ts-line-break)
+      ;; (hard_line_break) @md-ts-line-break
+      )
 
     :language 'markdown-inline
     :feature 'reference
