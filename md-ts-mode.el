@@ -720,7 +720,8 @@ NODE, OVERRIDE, START, END refer to `font-lock-keywords' documentation."
 (defun md-ts-mode--get-fenced-major-mode (language)
   "Return the major mode of fenced code block LANGUAGE alias refer to."
   (unless (assoc language md-ts-mode--language-cache)
-    (let* ((entry (seq-find (lambda (x) (member language (car x)))
+    (let* ((entry (seq-find (lambda (x)
+                              (member language (mapcar #'downcase (car x))))
                             md-ts-mode-language-mappings))
            (mode (or (seq-find #'fboundp (cdr entry))
                      (car (alist-get nil md-ts-mode-language-mappings))
