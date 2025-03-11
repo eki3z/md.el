@@ -92,6 +92,48 @@ Wiki_link and tags are included."
   :safe 'natnump
   :group 'md)
 
+(defcustom md-ts-mode-fontify-fenced-blocks-natively nil
+  "When non-nil, fontify code in code blocks using the native major mode.
+This only works for fenced code blocks where the language is
+specified where we can automatically determine the appropriate
+mode to use.  The language to mode mapping may be customized by
+setting the variable `md-ts-mode-language-mappings'."
+  :type 'boolean
+  :safe 'booleanp
+  :group 'md)
+
+(defcustom md-ts-mode-language-mappings
+  '((("ocaml") tuareg-mode)
+    (("elisp" "emacs-lisp") emacs-lisp-mode)
+    (("ditaa") artist-mode)
+    (("asymptote" "asy") asy-mode)
+    (("dot") fundamental-mode)
+    (("sqlite") sql-mode)
+    (("calc") fundamental-mode)
+    (("c")  c-ts-mode c-mode)
+    (("cpp" "c++") c++-mode)
+    (("screen") shell-script-mode)
+    (("shell" "bash" "sh") bash-ts-mode sh-mode)
+    (("py" "python") python-ts-mode python-mode)
+    (("javascript" "js") js-ts-mode js-mode)
+    (("typescript" "ts") typescript-ts-mode)
+    (nil text-mode))
+  "List of mappings between language aliases and major modes for fenced block.
+Each entry is a cons cell of two lists:
+- a list of language alias strings,
+  e.g. (\\\"py\\\" \\\"python\\\")
+- a list of major modes in order of preference,
+  e.g. (python-ts-mode python-mode)
+When fontifying a code block, the first available mode is used. An entry with
+ nil as the alias list serves as a default fallback, applying its modes if no
+ other entry matches or if no modes in a matching entry are available"
+  :type '(repeat
+          (cons
+           (choice
+            (repeat (string :tag "Language alias"))
+            (const :tag "Default (any unmatched language)" nil))
+           (repeat (symbol :tag "Major mode"))))
+  :group 'md)
 
 
 ;;; Syntax table
@@ -395,7 +437,7 @@ Wiki_link and tags are included."
      (fenced_code_block_delimiter) @md-ts-code-delimiter
      (info_string (language) @md-ts-code-language)
      ;; TODO rewrite codeblock highlight natively like org-mode
-     (code_fence_content) @font-lock-string-face
+     (code_fence_content) @md-ts-mode--fontify-fenced-block
      (indented_code_block) @md-ts-mode--fontify-indented-block))
   "Tree-sitter Font-lock settings for markdown and inline part.")
 
@@ -547,90 +589,6 @@ Wiki_link and tags are included."
      ((ERROR) @hr (:equal "+++" @hr)) @md-ts-horizontal-rule))
   "Tree-sitter Font-lock settings for toml metadata.")
 
-(defun md-ts-mode--markdown-inline-p (point)
-  "Return non-nil if language at POINT should be markdown-inline."
-  (when-let* ((node (treesit-node-at point 'markdown))
-              (type (treesit-node-type node)))
-    (or (string= type "inline")
-        (and (string= type "pipe_table_cell")
-             (string= (treesit-node-type (treesit-node-parent node))
-                      "pipe_table_row")))))
-
-(defun md-ts-mode--language-at-point (point)
-  "Return the language at POINT for `md-ts-mode'."
-  (if-let* ((node (treesit-node-at point 'markdown)))
-      (pcase (treesit-node-type node)
-        ("minus_metadata" 'yaml)
-        ("plus_metadata" 'toml)
-        ("html_block" 'html)
-        ((guard (md-ts-mode--markdown-inline-p point))
-         (if-let* ((node-i (treesit-node-at point 'markdown-inline)))
-             (pcase (treesit-node-type node-i)
-               ("html_tag" 'html)
-               ("latex_block" 'latex)
-               (_ 'markdown-inline))
-           'markdown-inline))
-        (_ 'markdown))
-    'markdown))
-
-;; TODO add more embedded langs, latex, mdx
-(defvar md-ts-mode--embedded-languages '(markdown-inline html yaml toml latex))
-(defun md-ts-mode--get-font-lock ()
-  "Return available font lock settings for `md-ts-mode'."
-  (thread-last
-    md-ts-mode--embedded-languages
-    (cons 'markdown)
-    (seq-filter (lambda (x) (treesit-ready-p x 'quiet)))
-    (seq-mapcat (lambda (x)
-                  (symbol-value
-                   (intern (format "md-ts-mode--%s-font-lock-settings"
-                                   (symbol-name x))))))))
-
-(defun md-ts-mode--get-fenced-language (node)
-  "Return the language info of fenced code block NODE located."
-  (thread-first
-    node
-    (treesit-node-parent)
-    (treesit-filter-child
-     (lambda (n) (string= (treesit-node-type n) "info_string")) t)
-    (car)
-    (treesit-filter-child
-     (lambda (n) (string= (treesit-node-type n) "language")) t)
-    (car)
-    (treesit-node-text t)))
-
-(defun md-ts-mode--fontify-label (node override start end &rest _)
-  "Function to fontify matched link label or footnote label.
-NODE, OVERRIDE, START, END please refer to `font-lock-keywords'."
-  (let* ((n-start (treesit-node-start node))
-         (n-end (treesit-node-end node))
-         (footnote-p (char-equal ?^ (char-after (1+ n-start))))
-         (label-face (if footnote-p 'md-ts-footnote-label 'md-ts-link-label)))
-    (mapc (pcase-lambda (`(,ns ,ne ,nf))
-            (treesit-fontify-with-override ns ne nf override start end))
-          `((,n-start ,(1+ n-start) md-ts-delimiter)
-            (,(1+ n-start) ,(1- n-end) ,label-face)
-            (,(1- n-end) ,n-end md-ts-delimiter)))))
-
-;; HACK remove trailing newlines for (indented_code_block)
-(defun md-ts-mode--fontify-indented-block (node override start end &rest _)
-  "Fontify an indented_code_block NODE, excluding trailing newlines.
-NODE, OVERRIDE, START, END refer to `font-lock-keywords' documentation."
-  (let* ((n-start (treesit-node-start node))
-         (n-end-raw (treesit-node-end node))
-         (n-end (save-excursion
-                  (goto-char n-end-raw)
-                  ;; Skip all trailing newlines
-                  (while (and (> (point) n-start)
-                              (eq (char-before) ?\n))
-                    (backward-char 1))
-                  ;; Move forward to include one newline, if possible
-                  (when (< (point) n-end-raw)
-                    (forward-char 1))
-                  (point))))
-    (treesit-fontify-with-override n-start n-end 'md-ts-indented-block
-                                   override start end)))
-
 (defvar md-ts-mode--embedded-range-rules
   '((:embed 'markdown-inline
      :host 'markdown
@@ -674,12 +632,171 @@ NODE, OVERRIDE, START, END refer to `font-lock-keywords' documentation."
                 (treesit-ready-p (cadr (plist-get x :host)) 'quiet))))
         (apply #'seq-concatenate 'list))))
 
+(defun md-ts-mode--markdown-inline-p (point)
+  "Return non-nil if language at POINT should be markdown-inline."
+  (when-let* ((node (treesit-node-at point 'markdown))
+              (type (treesit-node-type node)))
+    (or (string= type "inline")
+        (and (string= type "pipe_table_cell")
+             (string= (treesit-node-type (treesit-node-parent node))
+                      "pipe_table_row")))))
+
 (defun md-ts-mode--enabled-feature ()
   "Return a list of features which are enabled in `md-ts-mode'."
   (seq-keep (lambda (s)
               (and (treesit-font-lock-setting-enable s)
                    (treesit-font-lock-setting-feature s)))
             treesit-font-lock-settings))
+
+(defun md-ts-mode--language-at-point (point)
+  "Return the language at POINT for `md-ts-mode'."
+  (if-let* ((node (treesit-node-at point 'markdown)))
+      (pcase (treesit-node-type node)
+        ("minus_metadata" 'yaml)
+        ("plus_metadata" 'toml)
+        ("html_block" 'html)
+        ((guard (md-ts-mode--markdown-inline-p point))
+         (if-let* ((node-i (treesit-node-at point 'markdown-inline)))
+             (pcase (treesit-node-type node-i)
+               ("html_tag" 'html)
+               ("latex_block" 'latex)
+               (_ 'markdown-inline))
+           'markdown-inline))
+        (_ 'markdown))
+    'markdown))
+
+;; TODO add more embedded langs, latex, mdx
+(defvar md-ts-mode--embedded-languages '(markdown-inline html yaml toml latex))
+(defun md-ts-mode--get-font-lock ()
+  "Return available font lock settings for `md-ts-mode'."
+  (thread-last
+    md-ts-mode--embedded-languages
+    (cons 'markdown)
+    (seq-filter (lambda (x) (treesit-ready-p x 'quiet)))
+    (seq-mapcat (lambda (x)
+                  (symbol-value
+                   (intern (format "md-ts-mode--%s-font-lock-settings"
+                                   (symbol-name x))))))))
+
+(defun md-ts-mode--fontify-label (node override start end &rest _)
+  "Function to fontify matched link label or footnote label.
+NODE, OVERRIDE, START, END please refer to `font-lock-keywords'."
+  (let* ((n-start (treesit-node-start node))
+         (n-end (treesit-node-end node))
+         (footnote-p (char-equal ?^ (char-after (1+ n-start))))
+         (label-face (if footnote-p 'md-ts-footnote-label 'md-ts-link-label)))
+    (mapc (pcase-lambda (`(,ns ,ne ,nf))
+            (treesit-fontify-with-override ns ne nf override start end))
+          `((,n-start ,(1+ n-start) md-ts-delimiter)
+            (,(1+ n-start) ,(1- n-end) ,label-face)
+            (,(1- n-end) ,n-end md-ts-delimiter)))))
+
+;; HACK remove trailing newlines for (indented_code_block)
+(defun md-ts-mode--fontify-indented-block (node override start end &rest _)
+  "Fontify an indented_code_block NODE, excluding trailing newlines.
+NODE, OVERRIDE, START, END refer to `font-lock-keywords' documentation."
+  (let* ((n-start (treesit-node-start node))
+         (n-end-raw (treesit-node-end node))
+         (n-end (save-excursion
+                  (goto-char n-end-raw)
+                  ;; Skip all trailing newlines
+                  (while (and (> (point) n-start)
+                              (eq (char-before) ?\n))
+                    (backward-char 1))
+                  ;; Move forward to include one newline, if possible
+                  (when (< (point) n-end-raw)
+                    (forward-char 1))
+                  (point))))
+    (treesit-fontify-with-override n-start n-end 'md-ts-indented-block
+                                   override start end)))
+
+
+
+;; fontify fenced_code_block natively
+
+(defvar md-ts-mode--language-cache nil)
+
+(defun md-ts-mode--get-fenced-language (node)
+  "Return the language info of fenced code block NODE located."
+  (thread-first
+    node
+    (treesit-node-parent)
+    (treesit-filter-child
+     (lambda (n) (string= (treesit-node-type n) "info_string")) t)
+    (car)
+    (treesit-filter-child
+     (lambda (n) (string= (treesit-node-type n) "language")) t)
+    (car)
+    (treesit-node-text t)
+    (downcase)))
+
+(defun md-ts-mode--get-fenced-major-mode (language)
+  "Return the major mode of fenced code block LANGUAGE alias refer to."
+  (unless (assoc language md-ts-mode--language-cache)
+    (let* ((entry (seq-find (lambda (x) (member language (car x)))
+                            md-ts-mode-language-mappings))
+           (mode (or (seq-find #'fboundp (cdr entry))
+                     (car (alist-get nil md-ts-mode-language-mappings))
+                     'text-mode)))
+      (push (cons language mode) md-ts-mode--language-cache)))
+  (cdr (assoc language md-ts-mode--language-cache)))
+
+;; BUG
+;; - must edit and save, then fontify
+;; - too slowy
+;; - use font-lock-keywords instead
+
+;; Based on `markdown-fontify-code-block-natively' from markdown-mode
+(defun md-ts-mode--fontify-fenced-block (node &rest _)
+  "Fontify a fenced code block NODE using native mode highlighting.
+Called during font-lock when `md-ts-mode-fontify-fenced-blocks-natively'
+is non-nil.  NODE is a Tree-sitter node representing a fenced code block (e.g.,
+GitHub Flavored Markdown).  The function extracts the language from NODE,
+applies the corresponding major mode’s font-lock rules, and highlights the block
+from its start to end positions in the current buffer.  Additional arguments
+beyond NODE are ignored.  The block’s text is processed in a temporary buffer,
+and its faces are transferred back, with `md-ts-code-block' appended as a
+default face. Text properties are set to ensure proper fontification and buffer
+state is preserved."
+  (when md-ts-mode-fontify-fenced-blocks-natively
+    (let* ((lang (md-ts-mode--get-fenced-language node))
+           (mode (md-ts-mode--get-fenced-major-mode lang))
+           (start (treesit-node-start node))
+           (end (treesit-node-end node))
+           (text (treesit-node-text node t))
+           (modified (buffer-modified-p))
+           (md-buffer (current-buffer))
+           pos next)
+      ;; remove all face value
+      (remove-text-properties start end '(face nil))
+      (with-current-buffer
+          (get-buffer-create
+           (format " *md-code-fontification:%s*" (symbol-name mode)))
+        (let ((inhibit-modification-hooks nil))
+          (delete-region (point-min) (point-max))
+          (insert text " ")) ;; so there's a final property change
+        (unless (eq major-mode mode) (funcall mode))
+        (font-lock-ensure)
+        (setq pos (point-min))
+        (while (setq next (next-single-property-change pos 'face))
+          (let ((val (get-text-property pos 'face)))
+            (when val
+              (put-text-property
+               (+ start (1- pos)) (1- (+ start next)) 'face
+               val md-buffer)))
+          (setq pos next)))
+      ;; append default code block face
+      (font-lock-append-text-property start end 'face 'md-ts-code-block md-buffer)
+      (add-text-properties
+       start end
+       '(font-lock-fontified t fontified t font-lock-multiline t))
+      (set-buffer-modified-p modified))))
+
+(defun md-ts-mode--fontify-region-hybridly (start end &optional loudly)
+  "Fontify markdown buffer with both tree-sitter and traditional keywords.
+START, END, LOUDLY is same with"
+  (treesit-font-lock-fontify-region start end loudly)
+  (font-lock-fontify-keywords-region start end loudly))
 
 ;; (defun md-ts-mode--footnote-content-matcher (limit)
 ;;   "Find and set match data for footnote content up to LIMIT."
@@ -698,12 +815,6 @@ NODE, OVERRIDE, START, END refer to `font-lock-keywords' documentation."
 ;;                 (end (match-end 1)))
 ;;             (when (< end limit)
 ;;               (set-match-data (list start end)) t)))))))
-
-(defun md-ts-mode--fontify-region-hybridly (start end &optional loudly)
-  "Fontify markdown buffer with both tree-sitter and traditional keywords.
-START, END, LOUDLY is same with"
-  (treesit-font-lock-fontify-region start end loudly)
-  (font-lock-fontify-keywords-region start end loudly))
 
 
 ;; Navigation
