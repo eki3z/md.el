@@ -42,6 +42,9 @@
 (require 'seq)
 (require 'pcase)
 (require 'crm)
+(require 'mailcap)
+(require 'dnd)
+
 (require 'treesit)
 
 (declare-function xwidget-webkit-browse-url "xwidget")
@@ -902,6 +905,29 @@ node types like \"atx_h1_marker\", and EXTRACTOR is `md-ts-heading-name'."
     (nreverse rules)))
 
 
+;; Dnd
+
+;; Based on `markdown--dnd-local-file-handler' from markdown-mode
+(defun md-ts-mode--dnd-file-handler (urls _action)
+  "Insert links with given URLS in `md-ts-mode'."
+  (let ((index 0)
+        (pos (point)))
+    (dolist (url urls)
+      (setq index (1+ index))
+      (let* ((filename (dnd-get-local-file-name url))
+             (mimetype (mailcap-file-name-to-mime-type filename))
+             (text (format "%d-link" index))
+             (destination (file-relative-name filename))
+             (prefix (if (string-prefix-p "image/" mimetype) "!" " ")))
+        (when (string-match-p "\\s-" destination)
+          (setq destination (concat "<" destination ">")))
+        (insert (format "%s[%s](%s)" prefix text destination)))
+      (when (> (length urls) 1) (insert "\n")))
+    (goto-char (+ pos 8))))
+
+(put 'md-ts-mode--dnd-multi-local-file-handler 'dnd-multiple-handler t)
+
+
 ;; Major mode
 
 ;;;###autoload
@@ -963,6 +989,15 @@ You can install the parser with M-x `md-ts-mode-install-parsers'"))
 
   ;; Imenu
   (setq-local treesit-simple-imenu-settings `(,@(md-ts-mode--imenu-headings)))
+
+  ;; dnd
+  (let ((dnd-handler #'md-ts-mode--dnd-file-handler))
+    (setq-local dnd-protocol-alist
+                (append
+                 `(("^file:///"   . ,dnd-handler)
+                   ("^file:/[^/]" . ,dnd-handler)
+                   ("^file:[^/]"  . ,dnd-handler))
+                 dnd-protocol-alist)))
 
   (treesit-major-mode-setup))
 
