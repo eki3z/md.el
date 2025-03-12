@@ -44,7 +44,7 @@ Determines the unordered list style for TOC entries."
   :group 'md)
 
 (defcustom md-toc-template
-  '("<!-- md-toc start - Don't edit this section. Run M-x md-toc-update-doc -->"
+  '("<!-- md-toc start - Don't edit this section. Run M-x md-toc-update -->"
     "**Table of Contents**"
     "<!-- md-toc end -->")
   "Template for md toc, consisting of start delimiter, title, and end delimiter.
