@@ -442,8 +442,8 @@ When fontifying a code block, the first available mode is used. An entry with
    :language 'markdown
    :feature 'link_reference
    '((link_reference_definition
-      (link_label) @md-ts-mode--fontify-label
-      (link_destination) @md-ts-link-url
+      (link_label) :? @md-ts-mode--fontify-label
+      (link_destination) :? @md-ts-link-url
       (link_title) :? @md-ts-link-title))
 
    :language 'markdown
@@ -466,7 +466,7 @@ When fontifying a code block, the first available mode is used. An entry with
     :language 'markdown-inline
     :feature 'footnote
     '((shortcut_link
-       (link_text) @text
+       (link_text) :? @text
        (:match "^\\^" @text))
       @md-ts-mode--fontify-label)
 
@@ -503,18 +503,18 @@ When fontifying a code block, the first available mode is used. An entry with
     :language 'markdown-inline
     :feature 'link
     '((inline_link
-       (link_text) @md-ts-link-text
+       (link_text) :? @md-ts-link-text
        (link_destination) :? @md-ts-link-url
        (link_title) :? @md-ts-link-title)
       (inline_link ["[" "]" "(" ")"] @md-ts-delimiter)
 
       (full_reference_link
-       (link_text) @md-ts-link-text
-       (link_label) @md-ts-mode--fontify-label)
+       (link_text) :? @md-ts-link-text
+       (link_label) :? @md-ts-mode--fontify-label)
       (full_reference_link ["[" "]"] @md-ts-delimiter)
 
       (collapsed_reference_link
-       (link_text) @md-ts-link-text)
+       (link_text) :? @md-ts-link-text)
       (collapsed_reference_link ["[" "]"] @md-ts-delimiter)
 
       [(uri_autolink) (email_autolink)] @md-ts-link-url)
@@ -523,7 +523,7 @@ When fontifying a code block, the first available mode is used. An entry with
     :feature 'image
     '((image
        "!" @md-ts-image-marker
-       (image_description) @md-ts-link-text
+       (image_description) :? @md-ts-link-text
        (link_destination) :? @md-ts-link-url
        (link_title) :? @md-ts-link-title
        (link_label) :? @md-ts-mode--fontify-label)
@@ -533,7 +533,7 @@ When fontifying a code block, the first available mode is used. An entry with
      (treesit-font-lock-rules
       :language 'markdown-inline
       :feature 'wiki_link
-      '((wiki_link (link_destination) @md-ts-link-url
+      '((wiki_link (link_destination) :? @md-ts-link-url
                    (link_text) :? @md-ts-wiki-link)
         (wiki_link ["[" "|" "]"] @md-ts-delimiter))
 
