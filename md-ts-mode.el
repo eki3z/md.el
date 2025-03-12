@@ -738,16 +738,25 @@ NODE, OVERRIDE, START, END refer to `font-lock-keywords' documentation."
     (treesit-node-text t)
     (downcase)))
 
+(defun md-ts-mode--get-fenced-fallback-mode ()
+  "Return fallback major mode if fenced code block failed to handle."
+  (if-let* ((fallback (cdr (assoc "" md-ts-mode--language-cache))))
+      fallback
+    (let ((new (or (cadr (assq nil md-ts-mode-language-mappings)) 'text-mode)))
+      (push (cons "" new) md-ts-mode--language-cache)
+      new)))
+
 (defun md-ts-mode--get-fenced-major-mode (language)
   "Return the major mode of fenced code block LANGUAGE alias refer to."
   (unless (assoc language md-ts-mode--language-cache)
-    (let* ((entry (seq-find (lambda (x)
-                              (member language (mapcar #'downcase (car x))))
-                            md-ts-mode-language-mappings))
-           (mode (or (seq-find #'fboundp (cdr entry))
-                     (car (alist-get nil md-ts-mode-language-mappings))
-                     'text-mode)))
-      (push (cons language mode) md-ts-mode--language-cache)))
+    (let* ((mode (thread-last
+                   md-ts-mode-language-mappings
+                   (seq-find (lambda (x)
+                               (member language (mapcar #'downcase (car x)))))
+                   (cdr)
+                   (seq-find #'fboundp))))
+      (push (cons language (or mode (md-ts-mode--get-fenced-fallback-mode)))
+            md-ts-mode--language-cache)))
   (cdr (assoc language md-ts-mode--language-cache)))
 
 ;; Based on `markdown-fontify-code-block-natively' from markdown-mode
@@ -779,7 +788,17 @@ state is preserved."
         (let ((inhibit-modification-hooks nil))
           (delete-region (point-min) (point-max))
           (insert text " ")) ;; so there's a final property change
-        (unless (eq major-mode mode) (funcall mode))
+        (condition-case nil
+            (unless (eq major-mode mode)
+              (funcall mode))
+          ;; use fallback instead if funcall major mode failed.
+          (error
+           (let ((fallback (md-ts-mode--get-fenced-fallback-mode)))
+             (message "md: error happend when funcall %S, call %S instead."
+                      mode fallback)
+             (funcall fallback)
+             (setf (alist-get lang md-ts-mode-language-mappings nil nil #'string=)
+                   fallback))))
         (font-lock-ensure)
         (setq pos (point-min))
         (while (setq next (next-single-property-change pos 'face))
