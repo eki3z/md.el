@@ -423,8 +423,8 @@ When fontifying a code block, the first available mode is used. An entry with
    :language 'markdown
    :feature 'table
    '((pipe_table_header (pipe_table_cell) @md-ts-table-header)
-     (pipe_table (_ "|" @md-ts-table-delimiter))
-     (pipe_table_delimiter_cell "-" @md-ts-table-delimiter))
+     (pipe_table (_ ["|"] @md-ts-table-delimiter))
+     (pipe_table_delimiter_cell ["-"] @md-ts-table-delimiter))
 
    :language 'markdown
    :feature 'list
