@@ -91,6 +91,12 @@ Wiki_link and tags are included."
   :safe 'natnump
   :group 'md)
 
+(defcustom md-ts-mode-enable-setext-heading t
+  "If non-nil, enable setext style headings in `md-ts-mode'."
+  :type 'boolean
+  :safe 'booleanp
+  :group 'md)
+
 (defcustom md-ts-mode-fontify-fenced-blocks-natively nil
   "When non-nil, fontify code in code blocks using the native major mode.
 This only works for fenced code blocks where the language is
@@ -407,14 +413,15 @@ When fontifying a code block, the first available mode is used. An entry with
 
    :language 'markdown
    :feature 'heading
-   '((atx_heading (atx_h1_marker)) @md-ts-header-1
+   `((atx_heading (atx_h1_marker)) @md-ts-header-1
      (atx_heading (atx_h2_marker)) @md-ts-header-2
      (atx_heading (atx_h3_marker)) @md-ts-header-3
      (atx_heading (atx_h4_marker)) @md-ts-header-4
      (atx_heading (atx_h5_marker)) @md-ts-header-5
      (atx_heading (atx_h6_marker)) @md-ts-header-6
-     (setext_heading (setext_h1_underline)) @md-ts-header-1
-     (setext_heading (setext_h2_underline)) @md-ts-header-2)
+     ,@(when md-ts-mode-enable-setext-heading
+         '((setext_heading (setext_h1_underline)) @md-ts-header-1
+           (setext_heading (setext_h2_underline)) @md-ts-header-2)))
 
    :language 'markdown
    :feature 'blockquote
@@ -652,6 +659,11 @@ When fontifying a code block, the first available mode is used. An entry with
         (and (string= type "pipe_table_cell")
              (string= (treesit-node-type (treesit-node-parent node))
                       "pipe_table_row")))))
+
+(defmacro md-ts-mode--regexp-opt (&rest body)
+  "Return optional regex string based on BODY."
+  (declare (indent 1) (debug t))
+  `(regexp-opt (delq nil (list ,@body))))
 
 (defun md-ts-mode--enabled-feature ()
   "Return a list of features which are enabled in `md-ts-mode'."
@@ -894,11 +906,14 @@ Each rule is a list (NAME PATTERN nil EXTRACTOR) for ATX headings (H1-H6).
 NAME is the heading level (e.g., \"H1\"), PATTERN matches Tree-sitter
 node types like \"atx_h1_marker\", and EXTRACTOR is `md-ts-heading-name'."
   (let ((heading-levels (number-sequence 1 6))
+        (type-str (md-ts-mode--regexp-opt
+                      "atx_h%d_marker"
+                    (when md-ts-mode-enable-setext-heading
+                      "setext_h%d_underline")))
         rules)
     (dolist (level heading-levels rules)
       (push (list (format "H%d" level)
-                  (format "\\`\\(atx_h%d_marker\\|setext_h%d_underline\\)\\'"
-                          level level)
+                  (format (concat "\\`" type-str "\\'") level level)
                   nil
                   #'md-ts-mode--heading-name)
             rules))
@@ -983,7 +998,11 @@ You can install the parser with M-x `md-ts-mode-install-parsers'"))
                 (wiki_link tag)))
 
   ;; Navigation
-  (setq-local treesit-defun-type-regexp (rx (or "atx_heading" "setext_heading")))
+  (setq-local treesit-defun-type-regexp
+              (md-ts-mode--regexp-opt
+                  "atx_heading"
+                (when md-ts-mode-enable-setext-heading
+                  "setext_heading")))
   (setq-local treesit-defun-name-function #'md-ts-mode--defun-name)
   (setq-local treesit-thing-settings md-ts-mode--thing-settings)
 
