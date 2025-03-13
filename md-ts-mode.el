@@ -97,6 +97,12 @@ Wiki_link and tags are included."
   :safe 'booleanp
   :group 'md)
 
+(defcustom md-ts-mode-fontify-heading-content t
+  "If non-nil, fontify both marker and content in headings."
+  :type 'boolean
+  :safe 'booleanp
+  :group 'md)
+
 (defcustom md-ts-mode-fontify-fenced-blocks-natively nil
   "When non-nil, fontify code in code blocks using the native major mode.
 This only works for fenced code blocks where the language is
@@ -413,15 +419,25 @@ When fontifying a code block, the first available mode is used. An entry with
 
    :language 'markdown
    :feature 'heading
-   `((atx_heading (atx_h1_marker)) @md-ts-header-1
-     (atx_heading (atx_h2_marker)) @md-ts-header-2
-     (atx_heading (atx_h3_marker)) @md-ts-header-3
-     (atx_heading (atx_h4_marker)) @md-ts-header-4
-     (atx_heading (atx_h5_marker)) @md-ts-header-5
-     (atx_heading (atx_h6_marker)) @md-ts-header-6
+   `(,@(if md-ts-mode-fontify-heading-content
+           '((atx_heading (atx_h1_marker)) @md-ts-header-1
+             (atx_heading (atx_h2_marker)) @md-ts-header-2
+             (atx_heading (atx_h3_marker)) @md-ts-header-3
+             (atx_heading (atx_h4_marker)) @md-ts-header-4
+             (atx_heading (atx_h5_marker)) @md-ts-header-5
+             (atx_heading (atx_h6_marker)) @md-ts-header-6)
+         '((atx_heading (atx_h1_marker) @md-ts-header-1)
+           (atx_heading (atx_h2_marker) @md-ts-header-2)
+           (atx_heading (atx_h3_marker) @md-ts-header-3)
+           (atx_heading (atx_h4_marker) @md-ts-header-4)
+           (atx_heading (atx_h5_marker) @md-ts-header-5)
+           (atx_heading (atx_h6_marker) @md-ts-header-6)))
      ,@(when md-ts-mode-enable-setext-heading
-         '((setext_heading (setext_h1_underline)) @md-ts-header-1
-           (setext_heading (setext_h2_underline)) @md-ts-header-2)))
+         (if md-ts-mode-fontify-heading-content
+             '((setext_heading (setext_h1_underline)) @md-ts-header-1
+               (setext_heading (setext_h2_underline)) @md-ts-header-2)
+           '((setext_heading (setext_h1_underline) @md-ts-header-1)
+             (setext_heading (setext_h2_underline) @md-ts-header-2)))))
 
    :language 'markdown
    :feature 'blockquote
