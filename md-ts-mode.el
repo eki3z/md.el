@@ -1020,7 +1020,8 @@ You can install the parser with M-x `md-ts-mode-install-parsers'"))
                 (when md-ts-mode-enable-setext-heading
                   "setext_heading")))
   (setq-local treesit-defun-name-function #'md-ts-mode--defun-name)
-  (setq-local treesit-thing-settings md-ts-mode--thing-settings)
+  ;; BUG predicate error
+  ;; (setq-local treesit-thing-settings md-ts-mode--thing-settings)
 
   ;; Imenu
   (setq-local treesit-simple-imenu-settings `(,@(md-ts-mode--imenu-headings)))
