@@ -97,8 +97,8 @@ Wiki_link and tags are included."
   :safe 'booleanp
   :group 'md)
 
-(defcustom md-ts-mode-fontify-heading-content t
-  "If non-nil, fontify both marker and content in headings."
+(defcustom md-ts-mode-fontify-heading-markers-only nil
+  "If non-nil, fontify level markers only in headings."
   :type 'boolean
   :safe 'booleanp
   :group 'md)
@@ -419,25 +419,25 @@ When fontifying a code block, the first available mode is used. An entry with
 
    :language 'markdown
    :feature 'heading
-   `(,@(if md-ts-mode-fontify-heading-content
-           '((atx_heading (atx_h1_marker)) @md-ts-header-1
-             (atx_heading (atx_h2_marker)) @md-ts-header-2
-             (atx_heading (atx_h3_marker)) @md-ts-header-3
-             (atx_heading (atx_h4_marker)) @md-ts-header-4
-             (atx_heading (atx_h5_marker)) @md-ts-header-5
-             (atx_heading (atx_h6_marker)) @md-ts-header-6)
-         '((atx_heading (atx_h1_marker) @md-ts-header-1)
-           (atx_heading (atx_h2_marker) @md-ts-header-2)
-           (atx_heading (atx_h3_marker) @md-ts-header-3)
-           (atx_heading (atx_h4_marker) @md-ts-header-4)
-           (atx_heading (atx_h5_marker) @md-ts-header-5)
-           (atx_heading (atx_h6_marker) @md-ts-header-6)))
+   `(,@(if md-ts-mode-fontify-heading-markers-only
+           '((atx_heading (atx_h1_marker) @md-ts-header-1)
+             (atx_heading (atx_h2_marker) @md-ts-header-2)
+             (atx_heading (atx_h3_marker) @md-ts-header-3)
+             (atx_heading (atx_h4_marker) @md-ts-header-4)
+             (atx_heading (atx_h5_marker) @md-ts-header-5)
+             (atx_heading (atx_h6_marker) @md-ts-header-6))
+         '((atx_heading (atx_h1_marker)) @md-ts-header-1
+           (atx_heading (atx_h2_marker)) @md-ts-header-2
+           (atx_heading (atx_h3_marker)) @md-ts-header-3
+           (atx_heading (atx_h4_marker)) @md-ts-header-4
+           (atx_heading (atx_h5_marker)) @md-ts-header-5
+           (atx_heading (atx_h6_marker)) @md-ts-header-6))
      ,@(when md-ts-mode-enable-setext-heading
-         (if md-ts-mode-fontify-heading-content
-             '((setext_heading (setext_h1_underline)) @md-ts-header-1
-               (setext_heading (setext_h2_underline)) @md-ts-header-2)
-           '((setext_heading (setext_h1_underline) @md-ts-header-1)
-             (setext_heading (setext_h2_underline) @md-ts-header-2)))))
+         (if md-ts-mode-fontify-heading-markers-only
+             '((setext_heading (setext_h1_underline) @md-ts-header-1)
+               (setext_heading (setext_h2_underline) @md-ts-header-2))
+           '((setext_heading (setext_h1_underline)) @md-ts-header-1
+             (setext_heading (setext_h2_underline)) @md-ts-header-2))))
 
    :language 'markdown
    :feature 'blockquote
@@ -923,9 +923,9 @@ NAME is the heading level (e.g., \"H1\"), PATTERN matches Tree-sitter
 node types like \"atx_h1_marker\", and EXTRACTOR is `md-ts-heading-name'."
   (let ((heading-levels (number-sequence 1 6))
         (type-str (md-ts-mode--regexp-opt
-                      "atx_h%d_marker"
-                    (when md-ts-mode-enable-setext-heading
-                      "setext_h%d_underline")))
+                   "atx_h%d_marker"
+                   (when md-ts-mode-enable-setext-heading
+                     "setext_h%d_underline")))
         rules)
     (dolist (level heading-levels rules)
       (push (list (format "H%d" level)
@@ -1016,9 +1016,9 @@ You can install the parser with M-x `md-ts-mode-install-parsers'"))
   ;; Navigation
   (setq-local treesit-defun-type-regexp
               (md-ts-mode--regexp-opt
-                  "atx_heading"
-                (when md-ts-mode-enable-setext-heading
-                  "setext_heading")))
+               "atx_heading"
+               (when md-ts-mode-enable-setext-heading
+                 "setext_heading")))
   (setq-local treesit-defun-name-function #'md-ts-mode--defun-name)
   ;; BUG predicate error
   ;; (setq-local treesit-thing-settings md-ts-mode--thing-settings)
