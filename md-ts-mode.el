@@ -91,18 +91,6 @@ Wiki_link and tags are included."
   :safe 'natnump
   :group 'md)
 
-(defcustom md-ts-mode-enable-setext-heading t
-  "If non-nil, enable setext style headings in `md-ts-mode'."
-  :type 'boolean
-  :safe 'booleanp
-  :group 'md)
-
-(defcustom md-ts-mode-fontify-heading-markers-only nil
-  "If non-nil, fontify level markers only in headings."
-  :type 'boolean
-  :safe 'booleanp
-  :group 'md)
-
 (defcustom md-ts-mode-fontify-fenced-blocks-natively nil
   "When non-nil, fontify code in code blocks using the native major mode.
 This only works for fenced code blocks where the language is
@@ -215,6 +203,11 @@ When fontifying a code block, the first available mode is used. An entry with
   :group 'md
   :group 'faces)
 
+(defface md-ts-markup
+  '((t (:inherit shadow :slant normal :weight normal)))
+  "Face for markup elements."
+  :group 'md-ts-faces)
+
 (defface md-ts-header-base
   '((t (:weight extra-bold)))
   "Face for header base properties.."
@@ -251,7 +244,7 @@ When fontifying a code block, the first available mode is used. An entry with
   :group 'md-ts-faces)
 
 (defface md-ts-delimiter
-  '((t (:inherit (font-lock-delimiter-face bold))))
+  '((t (:inherit (md-ts-markup))))
   "Face for delimiters."
   :group 'md-ts-faces)
 
@@ -261,12 +254,12 @@ When fontifying a code block, the first available mode is used. An entry with
   :group 'md-ts-faces)
 
 (defface md-ts-ordered-list
-  '((t (:inherit font-lock-string-face)))
+  '((t (:inherit md-ts-markup)))
   "Face for order list item markers."
   :group 'md-ts-faces)
 
 (defface md-ts-unordered-list
-  '((t (:inherit font-lock-builtin-face)))
+  '((t (:inherit md-ts-markup)))
   "Face for unordered list item markers."
   :group 'md-ts-faces)
 
@@ -276,12 +269,12 @@ When fontifying a code block, the first available mode is used. An entry with
   :group 'md-ts-faces)
 
 (defface md-ts-blockquote
-  '((t (:inherit (italic bold))))
+  '((t (:inherit font-lock-doc-face)))
   "Face for blockquote sections."
   :group 'md-ts-faces)
 
 (defface md-ts-blockquote-marker
-  '((t (:inherit (md-ts-blockquote font-lock-builtin-face))))
+  '((t (:inherit (md-ts-markup))))
   "Face for blockquote markers."
   :group 'md-ts-faces)
 
@@ -295,8 +288,15 @@ When fontifying a code block, the first available mode is used. An entry with
   "Face for indented block section."
   :group 'md-ts-faces)
 
+(defface md-ts-code
+  '((t (:inherit default)))
+  "Face for inline code, pre blocks, and fenced code blocks.
+This may be used, for example, to add a contrasting background to
+inline code fragments and code blocks."
+  :group 'md-ts-faces)
+
 (defface md-ts-code-inline
-  '((t (:inherit (md-ts-code-block font-lock-string-face)
+  '((t (:inherit (font-lock-constant-face md-ts-code)
         :extend nil)))
   "Face for code inline section."
   :group 'md-ts-faces)
@@ -307,7 +307,7 @@ When fontifying a code block, the first available mode is used. An entry with
   :group 'md-ts-faces)
 
 (defface md-ts-code-language
-  '((t (:inherit font-lock-constant-face)))
+  '((t (:inherit font-lock-type-face)))
   "Face for code block language info strings."
   :group 'md-ts-faces)
 
@@ -419,25 +419,18 @@ When fontifying a code block, the first available mode is used. An entry with
 
    :language 'markdown
    :feature 'heading
-   `(,@(if md-ts-mode-fontify-heading-markers-only
-           '((atx_heading (atx_h1_marker) @md-ts-header-1)
-             (atx_heading (atx_h2_marker) @md-ts-header-2)
-             (atx_heading (atx_h3_marker) @md-ts-header-3)
-             (atx_heading (atx_h4_marker) @md-ts-header-4)
-             (atx_heading (atx_h5_marker) @md-ts-header-5)
-             (atx_heading (atx_h6_marker) @md-ts-header-6))
-         '((atx_heading (atx_h1_marker)) @md-ts-header-1
-           (atx_heading (atx_h2_marker)) @md-ts-header-2
-           (atx_heading (atx_h3_marker)) @md-ts-header-3
-           (atx_heading (atx_h4_marker)) @md-ts-header-4
-           (atx_heading (atx_h5_marker)) @md-ts-header-5
-           (atx_heading (atx_h6_marker)) @md-ts-header-6))
-     ,@(when md-ts-mode-enable-setext-heading
-         (if md-ts-mode-fontify-heading-markers-only
-             '((setext_heading (setext_h1_underline) @md-ts-header-1)
-               (setext_heading (setext_h2_underline) @md-ts-header-2))
-           '((setext_heading (setext_h1_underline)) @md-ts-header-1
-             (setext_heading (setext_h2_underline)) @md-ts-header-2))))
+   '((atx_heading (atx_h1_marker) @md-ts-markup heading_content: (inline) @md-ts-header-1)
+     (atx_heading (atx_h2_marker) @md-ts-markup heading_content: (inline) @md-ts-header-2)
+     (atx_heading (atx_h3_marker) @md-ts-markup heading_content: (inline) @md-ts-header-3)
+     (atx_heading (atx_h4_marker) @md-ts-markup heading_content: (inline) @md-ts-header-4)
+     (atx_heading (atx_h5_marker) @md-ts-markup heading_content: (inline) @md-ts-header-5)
+     (atx_heading (atx_h6_marker) @md-ts-markup heading_content: (inline) @md-ts-header-6)
+     (setext_heading
+      heading_content: (paragraph (inline) @md-ts-header-1)
+      (setext_h1_underline) @md-ts-markup)
+     (setext_heading
+      heading_content: (paragraph (inline) @md-ts-header-2)
+      (setext_h2_underline) @md-ts-markup))
 
    :language 'markdown
    :feature 'blockquote
@@ -922,10 +915,7 @@ Each rule is a list (NAME PATTERN nil EXTRACTOR) for ATX headings (H1-H6).
 NAME is the heading level (e.g., \"H1\"), PATTERN matches Tree-sitter
 node types like \"atx_h1_marker\", and EXTRACTOR is `md-ts-heading-name'."
   (let ((heading-levels (number-sequence 1 6))
-        (type-str (md-ts-mode--regexp-opt
-                   "atx_h%d_marker"
-                   (when md-ts-mode-enable-setext-heading
-                     "setext_h%d_underline")))
+        (type-str (md-ts-mode--regexp-opt "atx_h%d_marker" "setext_h%d_underline"))
         rules)
     (dolist (level heading-levels rules)
       (push (list (format "H%d" level)
@@ -1014,11 +1004,7 @@ You can install the parser with M-x `md-ts-mode-install-parsers'"))
                 (wiki_link tag)))
 
   ;; Navigation
-  (setq-local treesit-defun-type-regexp
-              (md-ts-mode--regexp-opt
-               "atx_heading"
-               (when md-ts-mode-enable-setext-heading
-                 "setext_heading")))
+  (setq-local treesit-defun-type-regexp (md-ts-mode--regexp-opt "atx_heading" "setext_heading"))
   (setq-local treesit-defun-name-function #'md-ts-mode--defun-name)
   ;; BUG predicate error
   ;; (setq-local treesit-thing-settings md-ts-mode--thing-settings)
